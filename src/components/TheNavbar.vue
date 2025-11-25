@@ -6,7 +6,7 @@
     const router = useRouter();
     function handleLogout() {
         store.logout();
-        router.push({ name: 'login' });
+        router.push('/login');
     }
 
 </script>

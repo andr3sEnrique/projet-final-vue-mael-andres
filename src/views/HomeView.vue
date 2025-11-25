@@ -7,11 +7,9 @@
 
 <template>
   <div class="container">
-    <div class="row mb-4">
-      <div class="col-12">
-        <h1 class="display-5 fw-bold text-primary">My Projects</h1>
-        <p class="text-muted">Select a project to see its tasks.</p>
-      </div>
+    <div class="d-flex flex-column align-items-center">
+      <h1 class="display-5 fw-bold text-primary">My Projects</h1>
+      <p class="text-muted">Select a project to see its tasks.</p>
     </div>
 
     <div v-if="projects.length === 0" class="alert alert-info" role="alert">
@@ -27,7 +25,7 @@
           </div>
           <div class="card-footer bg-transparent border-top-0">
             <button class="btn btn-outline-primary w-100">
-              Ver Proyecto
+              Show Details
             </button>
           </div>
         </div>
