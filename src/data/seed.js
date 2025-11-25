@@ -12,4 +12,4 @@ export const seedData = {
       { id: '101', projectId: '1', title: 'Setup Vue', description: 'Instalar Vite y Pinia', status: 'VALIDE', assignedTo: '1', comments: [] },
       { id: '102', projectId: '1', title: 'Diseñar Login', description: 'Crear formulario', status: 'EN_COURS', assignedTo: '1', comments: [] },
     ]
-  };
+};
