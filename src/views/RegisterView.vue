@@ -1,25 +1,37 @@
 <script setup>
 import { ref } from "vue";
 import { useAuthStore } from "../stores/auth";
-import { RouterLink, useRouter } from "vue-router";
+import { useRouter } from "vue-router";
 
 const authStore = useAuthStore();
 const router = useRouter();
 
+const roles = [
+  { value: "manager", label: "Manager" },
+  { value: "developer", label: "Développeur" },
+];
+
 const email = ref("");
+const name = ref("");
 const password = ref("");
+const userRoles = ref([]);
 const errorMsg = ref("");
 
-const handleLogin = () => {
+const handleRegister = () => {
   errorMsg.value = "";
 
-  const success = authStore.login(email.value, password.value);
+  if (userRoles.value.length === 0) {
+    errorMsg.value = "Veuillez sélectionner au moins un rôle";
+    return;
+  }
+
+  const success = authStore.register(name.value, email.value, password.value, userRoles.value);
 
   if (success) {
     console.log("Utilisateur connecté");
     router.push({ name: "home" });
   } else {
-    errorMsg.value = "Utilisateur inconnu ou mot de passe incorrect.";
+    errorMsg.value = "Email déjà utilisé";
   }
 };
 </script>
@@ -27,9 +39,14 @@ const handleLogin = () => {
 <template>
   <div class="login-container">
     <div class="login-card">
-      <h2>Connexion</h2>
+      <h2>Créer un compte</h2>
 
-      <form @submit.prevent="handleLogin">
+      <form @submit.prevent="handleRegister">
+        <div class="form-group">
+          <label for="name">Prénom nom</label>
+          <input type="name" id="name" v-model="name" required placeholder="Laura Manager" />
+        </div>
+
         <div class="form-group">
           <label for="email">Email</label>
           <input type="email" id="email" v-model="email" required placeholder="Ex: manager@test.com" />
@@ -40,12 +57,21 @@ const handleLogin = () => {
           <input type="password" id="password" v-model="password" required placeholder="Votre mot de passe" />
         </div>
 
+        <div class="form-group">
+          <label>Rôles :</label>
+          <div class="checkbox-container">
+            <div v-for="role in roles" :key="role.value" class="checkbox-item">
+              <input type="checkbox" :id="role.value" :value="role.value" v-model="userRoles" />
+              <label :for="role.value">{{ role.label }}</label>
+            </div>
+          </div>
+        </div>
         <div v-if="errorMsg" class="error-message">
           {{ errorMsg }}
         </div>
 
-        <button type="submit" class="btn-login">Se connecter</button>
-        <div class="register-link">Pas encore de compte ? <RouterLink :to="{ name: 'register' }">Créer un compte</RouterLink></div>
+        <button type="submit" class="btn-login">Créer un compte</button>
+        <div class="register-link">Déjà un compte ? <RouterLink :to="{ name: 'login' }">Ce connecter</RouterLink></div>
       </form>
     </div>
   </div>
@@ -86,13 +112,13 @@ input {
   padding: 0.75rem;
   border: 1px solid #ddd;
   border-radius: 4px;
-  box-sizing: border-box; /* Important pour le padding */
+  box-sizing: border-box;
 }
 
 .btn-login {
   width: 100%;
   padding: 0.75rem;
-  background-color: #42b883; /* Couleur Vue.js */
+  background-color: #42b883;
   color: white;
   border: none;
   border-radius: 4px;
@@ -122,5 +148,28 @@ input {
 }
 .register-link a:hover {
   text-decoration: underline;
+}
+.checkbox-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+input[type="checkbox"] {
+  width: auto;
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+.checkbox-item label {
+  font-weight: normal;
+  cursor: pointer;
+  margin-bottom: 0;
 }
 </style>
