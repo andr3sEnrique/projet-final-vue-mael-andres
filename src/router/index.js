@@ -15,4 +15,17 @@ const router = createRouter({
   ],
 });
 
+router.beforeEach((to, from, next) => {
+  const isAuth = !!localStorage.getItem("user");
+  console.log(isAuth);
+  if (!isAuth && to.name !== 'login' && to.name !== 'register') {
+    return next({ name: 'login' });
+  }
+
+  if (isAuth && (to.name === 'login' || to.name === 'register')) {
+    return next({ name: 'home' });
+  }
+  next();
+});
+
 export default router;

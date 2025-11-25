@@ -1,8 +1,23 @@
 <script setup>
   import { useDataStore } from '@/stores/dataStore';
+  import { computed } from 'vue';
   const store = useDataStore();
 
   const projects = store.projects;
+
+  const finalProjects = computed(() => {
+    const hasManagerRole = store.user.roles.includes('manager');
+
+    if (hasManagerRole) {
+      return projects;
+    }
+
+    return projects.filter(project => {
+      return store.tasks.some(task => task.projectId === project.id && task.assignedTo === store.user.id);
+    });
+  
+  });
+  
 </script>
 
 <template>
@@ -12,21 +27,24 @@
       <p class="text-muted">Select a project to see its tasks.</p>
     </div>
 
-    <div v-if="projects.length === 0" class="alert alert-info" role="alert">
+    <div v-if="finalProjects.length === 0" class="alert alert-info" role="alert">
       There are no projects available at this time.
     </div>
 
     <div v-else class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-      <div v-for="project in projects" :key="project.id" class="col">
+      <div v-for="project in finalProjects" :key="project.id" class="col">
         <div class="card h-100 shadow-sm hover-shadow">
           <div class="card-body">
             <h5 class="card-title">{{ project.title }}</h5>
             <p class="card-text text-secondary">{{ project.description }}</p>
           </div>
           <div class="card-footer bg-transparent border-top-0">
-            <button class="btn btn-outline-primary w-100">
+            <router-link 
+              :to="{ name: 'project', params: { id: project.id } }" 
+              class="btn btn-outline-primary w-100"
+            >
               Show Details
-            </button>
+            </router-link>
           </div>
         </div>
       </div>

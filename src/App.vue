@@ -1,13 +1,12 @@
 <script setup>
-import { RouterView } from "vue-router";
-import LoginView from "./views/LoginView.vue";
+import { RouterView, useRoute } from "vue-router";
 import TheNavbar from './components/TheNavbar.vue';
-
+const route = useRoute()
 </script>
 
 <template>
   <header>
-    <TheNavbar />
+    <TheNavbar v-if="route.name !== 'login' && route.name !== 'register'" />
   </header>
 
   <RouterView />
