@@ -22,12 +22,12 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarContent">
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
-                    <li v-if="store.currentUser" class="nav-item dropdown">
+                    <li v-if="store.user" class="nav-item dropdown">
                         <span class="nav-link text-light me-3">
-                            Hi, <strong>{{ store.currentUser.name }}</strong>
+                            Hi, <strong>{{ store.user.name }}</strong>
                         </span>
                     </li>
-                    <li v-if="store.currentUser" class="nav-item">
+                    <li v-if="store.user" class="nav-item">
                         <button @click="handleLogout" class="btn btn-outline-danger btn-sm">
                             <i class="bi bi-box-arrow-right"></i> Logout
                         </button>

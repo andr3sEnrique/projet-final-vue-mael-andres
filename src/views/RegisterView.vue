@@ -1,9 +1,9 @@
 <script setup>
 import { ref } from "vue";
-import { useAuthStore } from "../stores/auth";
+import { useDataStore } from '@/stores/dataStore';
 import { useRouter } from "vue-router";
 
-const authStore = useAuthStore();
+const authStore = useDataStore();
 const router = useRouter();
 
 const roles = [
