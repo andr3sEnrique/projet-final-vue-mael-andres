@@ -1,6 +1,6 @@
 <script setup>
-import { ref } from "vue";
-import { useDataStore } from '@/stores/dataStore';
+import { ref, watch } from "vue";
+import { useDataStore } from "@/stores/dataStore";
 import { useRouter } from "vue-router";
 
 const authStore = useDataStore();
@@ -14,11 +14,19 @@ const roles = [
 const email = ref("");
 const name = ref("");
 const password = ref("");
+const passwordErrors = ref(null);
+const confirmPassword = ref("");
+const confirmPasswordErrors = ref(null);
 const userRoles = ref([]);
 const errorMsg = ref("");
 
 const handleRegister = () => {
   errorMsg.value = "";
+
+  if (confirmPassword.value !== password.value) {
+    errorMsg.value = "Les mots de passes ne correspondent pas";
+    return;
+  }
 
   if (userRoles.value.length === 0) {
     errorMsg.value = "Veuillez sélectionner au moins un rôle";
@@ -34,6 +42,21 @@ const handleRegister = () => {
     errorMsg.value = "Email déjà utilisé";
   }
 };
+
+watch(password, () => {
+  let errors = [];
+  if (!password.value || password.value.length < 10) errors.push("Plus de 10 caractères");
+  if (!/[A-Z]/.test(password.value)) errors.push("Au moins une majuscule");
+  if (!/[a-z]/.test(password.value)) errors.push("Au moins une minuscule");
+  if (!/\d/.test(password.value)) errors.push("Au moins un chiffre");
+  passwordErrors.value = errors;
+});
+
+watch(confirmPassword, () => {
+  let errors = [];
+  if (password.value !== confirmPassword.value) errors.push("Les mots de passes doivent être identiques");
+  confirmPasswordErrors.value = errors;
+});
 </script>
 
 <template>
@@ -55,6 +78,24 @@ const handleRegister = () => {
         <div class="form-group">
           <label for="password">Mot de passe</label>
           <input type="password" id="password" v-model="password" required placeholder="Votre mot de passe" />
+          <div class="error-message" v-if="passwordErrors && passwordErrors.length > 0">
+            <p>Le mot de passe doit contenir :</p>
+            <ul>
+              <li v-for="err in passwordErrors">{{ err }}</li>
+            </ul>
+          </div>
+          <div class="password-valid" v-else-if="passwordErrors && passwordErrors.length === 0">Mot de passe correct</div>
+        </div>
+
+        <div class="form-group">
+          <label for="confirmPassword">Confirmer votre mot de passe</label>
+          <input type="password" id="confirmPassword" v-model="confirmPassword" required placeholder="Confirmer votre mot de passe" />
+          <div class="error-message" v-if="confirmPasswordErrors && confirmPasswordErrors.length > 0">
+            <ul>
+              <li v-for="err in confirmPasswordErrors">{{ err }}</li>
+            </ul>
+          </div>
+          <div class="password-valid" v-else-if="confirmPasswordErrors && confirmPasswordErrors.length === 0">Confirmation du mot de passe correct</div>
         </div>
 
         <div class="form-group">
@@ -133,6 +174,12 @@ input {
 
 .error-message {
   color: red;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.password-valid {
+  color: green;
   margin-top: 0.5rem;
   font-size: 0.9rem;
 }

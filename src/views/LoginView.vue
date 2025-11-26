@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from "vue";
-import { useDataStore } from '@/stores/dataStore';
+import { useDataStore } from "@/stores/dataStore";
 import { RouterLink, useRouter } from "vue-router";
 
 const authStore = useDataStore();
