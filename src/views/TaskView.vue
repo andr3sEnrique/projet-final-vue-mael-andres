@@ -2,7 +2,6 @@
 import { computed } from "vue";
 import { useDataStore } from "@/stores/dataStore";
 
-// 1. On définit les props attendues
 const props = defineProps({
   task: {
     type: Object,
@@ -12,26 +11,23 @@ const props = defineProps({
 
 const store = useDataStore();
 
-// 2. Récupérer le nom de l'utilisateur assigné via son ID
 const assignedUser = computed(() => {
   return store.users?.find((u) => u.id === props.task.assignedTo);
 });
 
-// 3. Gestion dynamique des couleurs selon le statut
 const statusBadgeClass = computed(() => {
   switch (props.task.status) {
     case "VALIDE":
-      return "bg-success"; // Vert
+      return "bg-success";
     case "EN_COURS":
-      return "bg-warning text-dark"; // Jaune
+      return "bg-warning text-dark";
     case "A_FAIRE":
-      return "bg-secondary"; // Gris
+      return "bg-secondary";
     default:
       return "bg-light text-dark border";
   }
 });
 
-// 4. Formatter le texte du statut pour qu'il soit plus joli (ex: EN_COURS -> En cours)
 const formatStatus = (status) => {
   return status
     .replace("_", " ")
