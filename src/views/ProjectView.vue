@@ -16,13 +16,36 @@ const tasks = computed(() => store.tasks.filter((task) => task.projectId === pro
 const goBack = () => router.push("/");
 
 const showModal = ref(false);
-const newTask = ref({ title: "", description: "", assignedTo: "", status: "PAS_COMMENCE" });
+const newTask = ref({ title: "", description: "", assignedTo: "", status: "NON_VALIDE" });
+const selectedTask = ref(null);
+const newCommentText = ref("");
 
 function saveTask() {
   if (!newTask.value.title) return;
 
   const { title, description, assignedTo, status } = newTask.value;
   store.addTask(projectId, title, description, status, assignedTo, "");
+  showModal.value = false;
+}
+
+function openTaskDetails(task) {
+  selectedTask.value = task;
+}
+
+function postComment() {
+  if (!newCommentText.value.trim()) return;
+
+  store.addComment(selectedTask.value.id, newCommentText.value, store.currentUser.id);
+  newCommentText.value = "";
+}
+
+function getAuthorName(userId) {
+  const user = store.users.find((u) => u.id === userId);
+  return user ? user.name : "Inconnu";
+}
+
+function formatDate(isoString) {
+  return new Date(isoString).toLocaleString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 }
 </script>
 
@@ -54,7 +77,7 @@ function saveTask() {
 
                 <div class="row row-cols-1 row-cols-md-2 g-3">
                   <div class="col" v-for="task in tasks" :key="task.id">
-                    <TaskView :task="task" />
+                    <TaskView :task="task" @view-task="openTaskDetails" />
                   </div>
                 </div>
               </div>
@@ -99,6 +122,51 @@ function saveTask() {
               </div>
             </div>
           </div>
+          <div v-if="selectedTask" class="modal-overlay" @click.self="selectedTask = null">
+            <div class="modal-card modal-lg">
+              <div class="d-flex justify-content-between align-items-start mb-3">
+                <h3 class="mb-0">{{ selectedTask.title }}</h3>
+                <button @click="selectedTask = null" class="btn-close"></button>
+              </div>
+
+              <div class="row">
+                <div class="col-md-7 border-end">
+                  <h6 class="text-muted">Description</h6>
+                  <p>{{ selectedTask.description }}</p>
+
+                  <div class="mt-4">
+                    <span class="badge bg-secondary me-2">{{ selectedTask.status }}</span>
+                    <small class="text-muted">ID: {{ selectedTask.id }}</small>
+                  </div>
+                </div>
+
+                <div class="col-md-5">
+                  <h6 class="text-muted mb-3">Commentaires</h6>
+
+                  <div class="comments-list mb-3">
+                    <div v-if="selectedTask.comments?.length === 0" class="text-center text-muted fst-italic mt-4">Pas encore de commentaires.</div>
+
+                    <div v-else v-for="comment in selectedTask.comments" :key="comment.id" class="comment-item mb-3">
+                      <div class="d-flex justify-content-between">
+                        <strong class="text-primary small">{{ getAuthorName(comment.authorId) }}</strong>
+                        <span class="text-muted x-small" style="font-size: 0.75rem">{{ formatDate(comment.date) }}</span>
+                      </div>
+                      <div class="bg-light p-2 rounded mt-1 text-dark">
+                        {{ comment.content }}
+                      </div>
+                    </div>
+                  </div>
+
+                  <form @submit.prevent="postComment">
+                    <div class="input-group">
+                      <input v-model="newCommentText" type="text" class="form-control" placeholder="Écrire un commentaire..." required />
+                      <button class="btn btn-primary" type="submit"><i class="bi bi-send"></i> Envoyer</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -126,5 +194,11 @@ function saveTask() {
   width: 90%;
   max-width: 500px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.comments-list {
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 5px;
 }
 </style>
