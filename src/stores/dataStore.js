@@ -1,12 +1,13 @@
-import { defineStore } from 'pinia';
-import { seedData } from '../data/seed';
+import { defineStore } from "pinia";
+import { seedData } from "../data/seed";
 
-export const useDataStore = defineStore('data', {
+export const useDataStore = defineStore("data", {
   state: () => ({
     user: null,
-    projects: JSON.parse(localStorage.getItem('projects')) || seedData.projects,
-    tasks: JSON.parse(localStorage.getItem('tasks')) || seedData.tasks,
-    currentUser: JSON.parse(localStorage.getItem('currentUser')) || null,
+    projects: JSON.parse(localStorage.getItem("projects")) || seedData.projects,
+    tasks: JSON.parse(localStorage.getItem("tasks")) || seedData.tasks,
+    currentUser: JSON.parse(localStorage.getItem("currentUser")) || null,
+    users: JSON.parse(localStorage.getItem("users")) || seedData.users,
   }),
   getters: {
     isAuthenticated: (state) => !!state.user,
@@ -31,7 +32,7 @@ export const useDataStore = defineStore('data', {
         tasks: [],
       };
       this.projects.push(project);
-      localStorage.setItem('projects', JSON.stringify(this.projects));
+      localStorage.setItem("projects", JSON.stringify(this.projects));
       return project;
     },
     logout() {
@@ -57,6 +58,19 @@ export const useDataStore = defineStore('data', {
       localStorage.setItem("user", JSON.stringify(newUser));
 
       return true;
-    }
-  }
+    },
+    addTask(projectId, title, description, status, assignedTo, comments) {
+      const newTask = {
+        id: crypto.randomUUID(),
+        projectId,
+        title,
+        description,
+        status,
+        assignedTo,
+        comments,
+      };
+
+      this.tasks.push(newTask);
+    },
+  },
 });

@@ -6,10 +6,12 @@ export const seedData = {
   ],
   projects: [
     { id: "1", title: "Web Corporativa", description: "Redesign completo", managerIds: ["1", "3"], tasks: ["101", "102"] },
-    { id: "2", title: "App Interna", description: "Gestión de inventario", managerIds: ["3"], tasks: [] },
+    { id: "2", title: "App Interna", description: "Gestión de inventario", managerIds: ["3"], tasks: ["103", "104"] },
   ],
   tasks: [
     { id: "101", projectId: "1", title: "Setup Vue", description: "Instalar Vite y Pinia", status: "VALIDE", assignedTo: "1", comments: [] },
     { id: "102", projectId: "1", title: "Diseñar Login", description: "Crear formulario", status: "EN_COURS", assignedTo: "1", comments: [] },
+    { id: "103", projectId: "2", title: "Diseñar Login", description: "Crear formulario", status: "EN_COURS", assignedTo: "2", comments: [] },
+    { id: "104", projectId: "2", title: "Diseñar Login 2", description: "Crear formulario 2", status: "EN_COURS", assignedTo: "", comments: [] },
   ],
 };
