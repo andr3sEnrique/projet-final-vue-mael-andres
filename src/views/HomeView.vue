@@ -3,12 +3,12 @@
   import { computed } from 'vue';
   const store = useDataStore();
 
+  const hasManagerRole = computed(() => store.user?.roles.includes('manager'));
   const projects = store.projects;
 
   const finalProjects = computed(() => {
-    const hasManagerRole = store.user.roles.includes('manager');
 
-    if (hasManagerRole) {
+    if (hasManagerRole.value) {
       return projects;
     }
 
@@ -25,6 +25,15 @@
     <div class="d-flex flex-column align-items-center">
       <h1 class="display-5 fw-bold text-primary">My Projects</h1>
       <p class="text-muted">Select a project to see its tasks.</p>
+    </div>
+    <div>
+      <router-link 
+        v-if="hasManagerRole" 
+        :to="{ name: 'add-project' }" 
+        class="btn btn-primary"
+      >
+        Create a new project
+      </router-link>
     </div>
 
     <div v-if="finalProjects.length === 0" class="alert alert-info" role="alert">

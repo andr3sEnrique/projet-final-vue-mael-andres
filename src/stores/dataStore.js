@@ -22,6 +22,18 @@ export const useDataStore = defineStore('data', {
       }
       return false;
     },
+    createProject(title, description, managerIds) {
+      const project = {
+        id: crypto.randomUUID(),
+        title,
+        description,
+        managerIds,
+        tasks: [],
+      };
+      this.projects.push(project);
+      localStorage.setItem('projects', JSON.stringify(this.projects));
+      return project;
+    },
     logout() {
       this.user = null;
       localStorage.removeItem("user");
@@ -45,14 +57,6 @@ export const useDataStore = defineStore('data', {
       localStorage.setItem("user", JSON.stringify(newUser));
 
       return true;
-    },
-    saveToLocalStorage() {
-      localStorage.setItem('projects', JSON.stringify(this.projects));
-      localStorage.setItem('tasks', JSON.stringify(this.tasks));
-      localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
-    },
-
-    addProject(project) { this.projects.push(project); this.saveToLocalStorage(); },
-    addTask(task) { this.tasks.push(task); this.saveToLocalStorage(); }
+    }
   }
 });
