@@ -37,7 +37,7 @@ const finalProjects = computed(() => {
             <p class="card-text text-secondary">{{ project.description }}</p>
           </div>
           <div class="card-footer bg-transparent border-top-0">
-            <router-link :to="{ name: 'project', params: { id: project.id } }" class="btn btn-outline-primary w-100"> Show Details </router-link>
+            <router-link :to="{ name: 'project-detail', params: { id: project.id } }" class="btn btn-outline-primary w-100"> Show Details </router-link>
           </div>
         </div>
       </div>

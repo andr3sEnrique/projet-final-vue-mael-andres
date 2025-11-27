@@ -1,3 +1,5 @@
+import { statusEnum } from "./statusEnum.js";
+
 export const seedData = {
   users: [
     { id: "1", name: "Laura Manager", email: "manager@test.com", password: "123", roles: ["manager"] },
@@ -5,13 +7,21 @@ export const seedData = {
     { id: "3", name: "Sophie Dual", email: "dual@test.com", password: "123", roles: ["manager", "developer"] },
   ],
   projects: [
-    { id: "1", title: "Web Corporativa", description: "Redesign completo", managerIds: ["1", "3"], tasks: ["101", "102"] },
-    { id: "2", title: "App Interna", description: "Gestión de inventario", managerIds: ["3"], tasks: ["103", "104"] },
+    { id: "1", title: "Web Corporativa", description: "Redesign completo", managerIds: ["1", "3"], tasks: ["101", "102"], startDate: new Date(), endDate: new Date(), status: "2" },
+    { id: "2", title: "App Interna", description: "Gestión de inventario", managerIds: ["3"], tasks: ["103", "104"], startDate: new Date(), endDate: new Date(), status: "3"  },
   ],
   tasks: [
-    { id: "101", projectId: "1", title: "Setup Vue", description: "Instalar Vite y Pinia", status: "VALIDE", assignedTo: "1", comments: [] },
-    { id: "102", projectId: "1", title: "Diseñar Login", description: "Crear formulario", status: "EN_COURS", assignedTo: "1", comments: [] },
-    { id: "103", projectId: "2", title: "Diseñar Login", description: "Crear formulario", status: "EN_COURS", assignedTo: "2", comments: [] },
-    { id: "104", projectId: "2", title: "Diseñar Login 2", description: "Crear formulario 2", status: "EN_COURS", assignedTo: "", comments: [] },
+    { id: "101", projectId: "1", title: "Setup Vue", description: "Instalar Vite y Pinia", status: "5", assignedTo: "1", comments: [] },
+    { id: "102", projectId: "1", title: "Diseñar Login", description: "Crear formulario", status: "2", assignedTo: "1", comments: [] },
+    { id: "103", projectId: "2", title: "Diseñar Login", description: "Crear formulario", status: "2", assignedTo: "2", comments: [] },
+    { id: "104", projectId: "2", title: "Diseñar Login 2", description: "Crear formulario 2", status: "5", assignedTo: "", comments: [] },
   ],
+  status: [
+    { id: "1", name: statusEnum.VALID },
+    { id: "2", name: statusEnum.IN_PROGRESS },
+    { id: "3", name: statusEnum.CANCELLED },
+    { id: "4", name: statusEnum.TO_DO },
+    { id: "5", name: statusEnum.DONE },
+    { id: "6", name: statusEnum.PENDING },
+  ]
 };

@@ -3,7 +3,8 @@ import HomeView from "../views/HomeView.vue";
 import LoginView from "../views/LoginView.vue";
 import RegisterView from "@/views/RegisterView.vue";
 import ProjectView from '../views/ProjectView.vue';
-import ProjectForm from "@/views/ProjectFormView.vue";
+import CreateProjectView from "@/views/CreateProjectView.vue";
+import EditProjectView from "@/views/EditProjectView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -11,8 +12,9 @@ const router = createRouter({
     { path: "/", name: "home", component: HomeView },
     { path: "/login", name: "login", component: LoginView },
     { path: "/register", name: "register", component: RegisterView },
-    { path: "/add-project", name: "add-project", component: ProjectForm },
-    { path: '/project/:id', name: 'project', component: ProjectView }
+    { path: "/projects/create", name: "add-project", component: CreateProjectView },
+    { path: '/projects/:id/update', name: 'update-project', component: EditProjectView },
+    { path: '/projects/:id', name: 'project-detail', component: ProjectView }
 
   ],
 });

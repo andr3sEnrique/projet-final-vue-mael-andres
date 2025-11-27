@@ -1,6 +1,8 @@
 <script setup>
 import { computed } from "vue";
 import { useDataStore } from "@/stores/dataStore";
+import { statusEnum } from "@/data/statusEnum.js";
+import { getStatusName } from "@/utils/getStatusName";
 
 const props = defineProps({
   task: {
@@ -15,25 +17,25 @@ const assignedUser = computed(() => {
   return store.users?.find((u) => u.id === props.task.assignedTo);
 });
 
+const statusName = computed(() => getStatusName(store.status, props.task));
+
+
 const statusBadgeClass = computed(() => {
-  switch (props.task.status) {
-    case "VALIDE":
+  switch (statusName.value) {
+    case statusEnum.VALID:
       return "bg-success";
-    case "EN_COURS":
+    case statusEnum.IN_PROGRESS:
       return "bg-warning text-dark";
-    case "A_FAIRE":
+    case statusEnum.TO_DO:
       return "bg-secondary";
+      case statusEnum.CANCELLED:
+      return "bg-danger";
+      case statusEnum.DONE:
+      return "bg-primary";
     default:
       return "bg-light text-dark border";
   }
 });
-
-const formatStatus = (status) => {
-  return status
-    .replace("_", " ")
-    .toLowerCase()
-    .replace(/\b\w/g, (l) => l.toUpperCase());
-};
 </script>
 
 <template>
@@ -43,7 +45,7 @@ const formatStatus = (status) => {
         <h5 class="card-title mb-0 fw-bold text-dark">{{ task.title }}</h5>
 
         <span class="badge rounded-pill" :class="statusBadgeClass">
-          {{ formatStatus(task.status) }}
+          {{ statusName }}
         </span>
       </div>
 
