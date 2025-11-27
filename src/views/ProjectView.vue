@@ -2,18 +2,28 @@
 import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useDataStore } from "@/stores/dataStore";
-import TaskView from "./TaskView.vue";
 import { statusEnum } from "@/data/statusEnum.js";
 import { getStatusName } from "@/utils/getStatusName";
 import Swal from 'sweetalert2';
+import ProjectActions from "@/components/projects/ProjectActions.vue";
+import TaskFormModal from "@/components/projects/TaskFormModal.vue";
+import TaskDetailsModal from "@/components/projects/TaskDetailsModal.vue";
+import DeveloperTasksView from "@/components/projects/DeveloperTasksView.vue";
+import ManagerTasksView from "@/components/projects/ManagerTasksView.vue";
 
 const route = useRoute();
 const router = useRouter();
 const store = useDataStore();
 
-const hasBothRoles = computed(() => store.user?.roles.includes("manager") && store.user?.roles.includes("developer"));
-const hasManagerRole = computed(() => store.user?.roles.includes("manager") && !store.user?.roles.includes("developer"));
-const hasDeveloperRole = computed(() => store.user?.roles.includes("developer") && !store.user?.roles.includes("manager"));
+const isDeleting = ref(false);
+const isCreatingTask = ref(false);
+const isPostingComment = ref(false);
+
+const authorNameCache = new Map();
+
+const hasBothRoles = computed(() => store.user?.roles?.includes("manager") && store.user?.roles?.includes("developer"));
+const hasManagerRole = computed(() => store.user?.roles?.includes("manager") && !store.user?.roles?.includes("developer"));
+const hasDeveloperRole = computed(() => store.user?.roles?.includes("developer") && !store.user?.roles?.includes("manager"));
 
 const viewMode = ref(null);
 
@@ -36,46 +46,55 @@ const setViewMode = (mode) => {
 };
 
 const handleDelete = async () => {
-  const { isConfirmed } = await Swal.fire({
-    title: 'Are you sure you want to delete this project?',
-    text: 'You won\'t be able to revert this!',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: 'Yes',
-    cancelButtonText: 'Cancel'
-  });
-
-  if (isConfirmed) {
+  isDeleting.value = true;
+  try {
     store.deleteProject(projectId);
+    await Swal.fire({
+      title: 'Success!',
+      text: 'Project deleted successfully',
+      icon: 'success',
+      timer: 2000,
+      showConfirmButton: false
+    });
     router.push('/');
+  } catch (error) {
+    Swal.fire({
+      title: 'Error!',
+      text: 'Failed to delete project',
+      icon: 'error'
+    });
+  } finally {
+    isDeleting.value = false;
   }
 };
 
 const projectId = route.params.id;
 
-const project = computed(() => store.projects.find((p) => p.id === projectId));
-const tasks = computed(() => store.tasks.filter((task) => task.projectId === projectId));
+const project = computed(() => {
+  if (!store.projects || !Array.isArray(store.projects)) return null;
+  return store.projects.find((p) => p?.id === projectId);
+});
+
+const tasks = computed(() => {
+  if (!store.tasks || !Array.isArray(store.tasks)) return [];
+  return store.tasks.filter((task) => task?.projectId === projectId);
+});
 
 const myAssignedTasks = computed(() => {
-  return tasks.value.filter((task) => task.assignedTo === store.user?.id);
+  if (!store.user?.id) return [];
+  return tasks.value.filter((task) => task?.assignedTo === store.user.id);
 });
 
 const otherTasks = computed(() => {
-  return tasks.value.filter((task) => task.assignedTo !== store.user?.id);
-});
-
-const orderedTasks = computed(() => {
-  if (viewMode.value === 'developer') {
-    return [...myAssignedTasks.value, ...otherTasks.value];
-  }
-  return tasks.value;
+  if (!store.user?.id) return tasks.value;
+  return tasks.value.filter((task) => task?.assignedTo !== store.user.id);
 });
 
 const canAddTasks = computed(() => {
-  if (!project.value || !store.user) return false;
+  if (!project.value || !store.user?.id) return false;
 
   if (hasManagerRole.value) {
-    return project.value.managerIds.includes(store.user.id);
+    return project.value?.managerIds?.includes(store.user.id) || false;
   }
 
   return true;
@@ -83,9 +102,12 @@ const canAddTasks = computed(() => {
 
 
 const progessPercentage = computed(() => {
-  if (!tasks.value || tasks.value.length === 0) return 0;
+  if (!tasks.value || !Array.isArray(tasks.value) || tasks.value.length === 0) return 0;
+  if (!store.status || !Array.isArray(store.status)) return 0;
+  
   let completedTasks = 0;
   for (const task of tasks.value) {
+    if (!task) continue;
     const st = getStatusName(store.status, task);
     if (st !== null && st === statusEnum.DONE) {
       completedTasks++;
@@ -96,8 +118,9 @@ const progessPercentage = computed(() => {
 
 const projectStatus = computed(() => {
   if (!project.value) return { label: 'Unknown', class: 'bg-secondary', icon: 'bi-question-circle' };
+  if (!store.status || !Array.isArray(store.status)) return { label: 'Unknown', class: 'bg-secondary', icon: 'bi-question-circle' };
 
-  const st = store.status.find(s => s.id === project.value.status);
+  const st = store.status.find(s => s?.id === project.value.status);
   if (!st) return { label: 'Unknown', class: 'bg-secondary', icon: 'bi-question-circle' };
 
   let cls;
@@ -181,37 +204,36 @@ const newTask = ref({ title: "", description: "", assignedTo: "", status: getDef
 const selectedTask = ref(null);
 const newCommentText = ref("");
 
-function saveTask() {
-  if (!newTask.value.title) return;
-
-  const { title, description, status } = newTask.value;
-  let assignedTo = newTask.value.assignedTo;
-  if (hasDeveloperRole) {
-    assignedTo = store.user.id;
-  }
-  store.addTask(projectId, title, description, status, assignedTo, "");
-  showModal.value = false;
-  resetTask();
-}
-
-function resetTask() {
-  newTask.value = { title: "", description: "", assignedTo: hasManagerRole.value ? "" : store.user?.id || "", status: getDefaultStatus() };
-}
-
 function openTaskDetails(task) {
   selectedTask.value = task;
 }
 
-function postComment() {
-  if (!newCommentText.value.trim()) return;
+function handleTaskCreated() {
+  showModal.value = false;
+}
 
-  store.addComment(selectedTask.value.id, newCommentText.value, store.user.id);
-  newCommentText.value = "";
+function handleCommentAdded() {}
+
+function handleViewModeChange(mode) {
+  setViewMode(mode);
 }
 
 function getAuthorName(userId) {
-  const user = store.users.find((u) => u.id === userId);
-  return user ? user.name : "Inconnu";
+  if (!userId) return "Inconnu";
+  
+  // Check cache first
+  if (authorNameCache.has(userId)) {
+    return authorNameCache.get(userId);
+  }
+  
+  if (!store.users || !Array.isArray(store.users)) return "Inconnu";
+  
+  const user = store.users.find((u) => u?.id === userId);
+  const name = user?.name || "Inconnu";
+  
+  // Cache the result
+  authorNameCache.set(userId, name);
+  return name;
 }
 
 function formatDate(isoString) {
@@ -233,32 +255,17 @@ function formatDate(isoString) {
           <div class="d-flex align-items-center mb-3">
             <h1 class="display-6 mb-0 me-3">{{ project.title }}</h1>
 
-            <div v-if="hasBothRoles" class="ms-auto d-flex gap-2 me-3">
-              <button 
-                @click="setViewMode('developer')" 
-                :class="['btn', viewMode === 'developer' ? 'btn-primary' : 'btn-outline-primary']"
-              >
-                👨‍💻 Developer View
-              </button>
-              <button 
-                @click="setViewMode('manager')" 
-                :class="['btn', viewMode === 'manager' ? 'btn-primary' : 'btn-outline-primary']"
-              >
-                📊 Manager View
-              </button>
-            </div>
-
-            <div v-if="hasManagerRole" class="ms-auto d-flex gap-2">
-              <button @click="router.push(`/projects/${project.id}/update`)" class="btn btn-outline-primary">
-                ✏️
-              </button>
-              <button @click="handleDelete" class="btn btn-outline-danger">
-                🗑️
-              </button>
-              <button @click="router.push('/')" class="btn btn-outline-secondary">
-                Go Home
-              </button>
-            </div>
+            <ProjectActions 
+              v-if="project"
+              :project="project"
+              :hasBothRoles="hasBothRoles"
+              :hasManagerRole="hasManagerRole"
+              :viewMode="viewMode"
+              :isDeleting="isDeleting"
+              @delete="handleDelete"
+              @update-view-mode="handleViewModeChange"
+              class="ms-auto"
+            />
           </div>
 
           <p class="text-muted mb-3">{{ project.description }}</p>
@@ -337,170 +344,44 @@ function formatDate(isoString) {
         <div class="col-12">
           <div class="card bg-light border-0">
             <div class="card-body text-center py-5">
-              <div v-if="tasks.length > 0" class="text-start">
-                <div v-if="viewMode === 'developer'">
-                  <div v-if="myAssignedTasks.length > 0" class="mb-5">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                      <h5 class="mb-0">
-                        <i class="bi bi-person-check me-2"></i>
-                        My Assigned Tasks
-                        <span class="badge bg-primary ms-2">{{ myAssignedTasks.length }}</span>
-                      </h5>
-                      <button v-if="canAddTasks" class="btn btn-primary" @click="showModal = true">
-                        <i class="bi bi-plus-lg me-1"></i> New Task
-                      </button>
-                    </div>
-                    <div class="row row-cols-1 row-cols-md-2 g-3">
-                      <div class="col" v-for="task in myAssignedTasks" :key="task.id">
-                        <TaskView :task="task" @view-task="openTaskDetails" />
-                      </div>
-                    </div>
-                  </div>
+              <DeveloperTasksView 
+                v-if="viewMode === 'developer'"
+                :tasks="tasks"
+                :userId="store.user?.id"
+                :canAddTasks="canAddTasks"
+                @view-task="openTaskDetails"
+                @add-task="showModal = true"
+              />
 
-                  <div v-if="otherTasks.length > 0">
-                    <h5 class="mb-3">
-                      <i class="bi bi-kanban me-2"></i>
-                      Other Tasks
-                      <span class="badge bg-secondary ms-2">{{ otherTasks.length }}</span>
-                    </h5>
-                    <div class="row row-cols-1 row-cols-md-2 g-3">
-                      <div class="col" v-for="task in otherTasks" :key="task.id">
-                        <TaskView :task="task" @view-task="openTaskDetails" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div v-else-if="viewMode === 'manager'">
-                  <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="mb-0">
-                      <i class="bi bi-kanban me-2"></i>
-                      Project Tasks
-                      <span class="badge bg-secondary ms-2">{{ tasks.length }}</span>
-                    </h5>
-                    <button v-if="canAddTasks" class="btn btn-primary" @click="showModal = true">
-                      <i class="bi bi-plus-lg me-1"></i> New Task
-                    </button>
-                  </div>
-
-                  <div class="row row-cols-1 row-cols-md-2 g-3">
-                    <div class="col" v-for="task in tasks" :key="task.id">
-                      <TaskView :task="task" @view-task="openTaskDetails" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div v-else>
-                <i class="bi bi-inbox text-secondary" style="font-size: 4rem;"></i>
-                <h5 class="text-secondary mt-3">No tasks yet</h5>
-                <p class="text-muted mb-4">Get started by creating your first task for this project</p>
-                <button v-if="canAddTasks" class="btn btn-primary" @click="showModal = true">
-                  <i class="bi bi-plus-lg me-1"></i> Create First Task
-                </button>
-              </div>
+              <ManagerTasksView 
+                v-else-if="viewMode === 'manager'"
+                :tasks="tasks"
+                :canAddTasks="canAddTasks"
+                @view-task="openTaskDetails"
+                @add-task="showModal = true"
+              />
             </div>
           </div>
         </div>
       </div>
 
-      <div v-if="showModal" class="modal d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);" @click.self="showModal = false">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">
-                <i class="bi bi-plus-circle me-2"></i>New Task
-              </h5>
-              <button type="button" class="btn-close" @click="showModal = false"></button>
-            </div>
+      <TaskFormModal 
+        :isOpen="showModal"
+        :projectId="projectId"
+        :hasManagerRole="hasManagerRole"
+        :hasDeveloperRole="hasDeveloperRole"
+        :isCreating="isCreatingTask"
+        @close="showModal = false"
+        @task-created="handleTaskCreated"
+      />
 
-            <form @submit.prevent="saveTask">
-              <div class="modal-body">
-                <div class="mb-3">
-                  <label class="form-label fw-semibold">Title *</label>
-                  <input
-                    v-model="newTask.title"
-                    type="text"
-                    class="form-control"
-                    required
-                    placeholder="e.g., Create database schema"
-                  />
-                </div>
-
-                <div class="mb-3">
-                  <label class="form-label fw-semibold">Description</label>
-                  <textarea
-                    v-model="newTask.description"
-                    class="form-control"
-                    rows="3"
-                    placeholder="Describe the task details..."
-                  ></textarea>
-                </div>
-
-                <div v-if="hasManagerRole" class="mb-3">
-                  <label class="form-label fw-semibold">Assign to</label>
-                  <select v-model="newTask.assignedTo" class="form-select">
-                    <option disabled value="">Select a team member...</option>
-                    <option v-for="user in store.users" :key="user.id" :value="user.id">{{ user.name }} ({{ user.roles.join(", ") }})</option>
-                  </select>
-                </div>
-              </div>
-              <div class="modal-footer">
-                <button type="button" @click="showModal = false" class="btn btn-secondary">Cancel</button>
-                <button type="submit" class="btn btn-success">Create Task</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-
-      <div v-if="selectedTask" class="modal d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);" @click.self="selectedTask = null">
-        <div class="modal-dialog modal-lg">
-          <div class="modal-content">
-            <div class="d-flex justify-content-between align-items-start mb-3">
-                <h3 class="mb-0">{{ selectedTask.title }}</h3>
-                <button @click="selectedTask = null" class="btn-close"></button>
-              </div>
-
-              <div class="row">
-                <div class="col-md-7 border-end">
-                  <h6 class="text-muted">Description</h6>
-                  <p>{{ selectedTask.description }}</p>
-
-                  <div class="mt-4">
-                    <span class="badge bg-secondary me-2">{{ selectedTask.status }}</span>
-                    <small class="text-muted">ID: {{ selectedTask.id }}</small>
-                  </div>
-                </div>
-
-                <div class="col-md-5">
-                  <h6 class="text-muted mb-3">Commentaires</h6>
-
-                  <div class="comments-list mb-3">
-                    <div v-if="selectedTask.comments?.length === 0" class="text-center text-muted fst-italic mt-4">Pas encore de commentaires.</div>
-
-                    <div v-else v-for="comment in selectedTask.comments" :key="comment.id" class="comment-item mb-3">
-                      <div class="d-flex justify-content-between">
-                        <strong class="text-primary small">{{ getAuthorName(comment.authorId) }}</strong>
-                        <span class="text-muted x-small" style="font-size: 0.75rem">{{ formatDate(comment.date) }}</span>
-                      </div>
-                      <div class="bg-light p-2 rounded mt-1 text-dark">
-                        {{ comment.content }}
-                      </div>
-                    </div>
-                  </div>
-
-                  <form @submit.prevent="postComment">
-                    <div class="input-group">
-                      <input v-model="newCommentText" type="text" class="form-control" placeholder="Écrire un commentaire..." required />
-                      <button class="btn btn-primary" type="submit"><i class="bi bi-send"></i> Envoyer</button>
-                    </div>
-                  </form>
-                </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <TaskDetailsModal 
+        :task="selectedTask"
+        :isOpen="!!selectedTask"
+        :isPostingComment="isPostingComment"
+        @close="selectedTask = null"
+        @comment-added="handleCommentAdded"
+      />
     </div>
   </div>
 </template>
@@ -513,19 +394,5 @@ function formatDate(isoString) {
 .card:hover {
   transform: translateY(-2px);
   box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15) !important;
-}
-
-.comments-list {
-  max-height: 300px;
-  overflow-y: auto;
-  padding-right: 5px;
-}
-
-.modal-dialog {
-  max-width: 900px;
-}
-
-.modal-content {
-  border-radius: 0.5rem;
 }
 </style>
