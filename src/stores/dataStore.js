@@ -84,5 +84,21 @@ export const useDataStore = defineStore("data", {
 
       this.tasks.push(newTask);
     },
+
+    addComment(taskId, content, userId) {
+      const task = this.tasks?.find((t) => t.id === taskId);
+
+      if (!task) return;
+
+      const newComment = {
+        id: String(Date.now()),
+        content,
+        authorId: userId,
+        date: new Date().toISOString(),
+      };
+
+      if (!task.comments) task.comments = [];
+      task.comments.push(newComment);
+    },
   },
 });

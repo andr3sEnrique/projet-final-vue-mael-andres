@@ -11,6 +11,8 @@ const props = defineProps({
   },
 });
 
+const emit = defineEmits(["view-task"]);
+
 const store = useDataStore();
 
 const assignedUser = computed(() => {
@@ -36,6 +38,17 @@ const statusBadgeClass = computed(() => {
       return "bg-light text-dark border";
   }
 });
+
+const formatStatus = (status) => {
+  return status
+    .replace("_", " ")
+    .toLowerCase()
+    .replace(/\b\w/g, (l) => l.toUpperCase());
+};
+
+function handleClick() {
+  emit("view-task", props.task);
+}
 </script>
 
 <template>
@@ -65,7 +78,7 @@ const statusBadgeClass = computed(() => {
           </small>
         </div>
 
-        <button class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 0.8rem">Voir</button>
+        <button class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 0.8rem" @click="handleClick">Voir</button>
       </div>
     </div>
   </div>
