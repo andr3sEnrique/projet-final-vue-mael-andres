@@ -343,7 +343,7 @@ function formatDate(isoString) {
       <div class="row">
         <div class="col-12">
           <div class="card bg-light border-0">
-            <div class="card-body text-center py-5">
+            <div class="card-body text-start py-4 px-4">
               <DeveloperTasksView 
                 v-if="viewMode === 'developer'"
                 :tasks="tasks"

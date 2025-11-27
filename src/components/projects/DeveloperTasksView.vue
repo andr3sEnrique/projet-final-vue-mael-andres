@@ -1,6 +1,8 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import TaskView from '@/views/TaskView.vue';
+import TaskFiltersBar from './TaskFiltersBar.vue';
+
 const props = defineProps({
   tasks: {
     type: Array,
@@ -18,19 +20,34 @@ const props = defineProps({
 
 const emit = defineEmits(['view-task', 'add-task']);
 
+const filteredTasks = ref([]);
+
 const myAssignedTasks = computed(() => {
+  const tasksToUse = filteredTasks.value.length > 0 ? filteredTasks.value : props.tasks;
   if (!props.userId) return [];
-  return props.tasks.filter((task) => task?.assignedTo === props.userId);
+  return tasksToUse.filter((task) => task?.assignedTo === props.userId);
 });
 
 const otherTasks = computed(() => {
-  if (!props.userId) return props.tasks;
-  return props.tasks.filter((task) => task?.assignedTo !== props.userId);
+  const tasksToUse = filteredTasks.value.length > 0 ? filteredTasks.value : props.tasks;
+  if (!props.userId) return tasksToUse;
+  return tasksToUse.filter((task) => task?.assignedTo !== props.userId);
 });
+
+const handleFilteredTasks = (tasks) => {
+  filteredTasks.value = tasks;
+};
 </script>
 
 <template>
   <div class="text-start">
+    <TaskFiltersBar 
+      :tasks="props.tasks"
+      :canAddTasks="canAddTasks"
+      @add-task="emit('add-task')"
+      @filtered-tasks="handleFilteredTasks"
+    />
+
     <div v-if="myAssignedTasks.length > 0" class="mb-5">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h5 class="mb-0">
@@ -38,9 +55,6 @@ const otherTasks = computed(() => {
           My Assigned Tasks
           <span class="badge bg-primary ms-2">{{ myAssignedTasks.length }}</span>
         </h5>
-        <button v-if="canAddTasks" class="btn btn-primary" @click="emit('add-task')" aria-label="Create new task">
-          <i class="bi bi-plus-lg me-1"></i> New Task
-        </button>
       </div>
       <div class="row row-cols-1 row-cols-md-2 g-3">
         <div class="col" v-for="task in myAssignedTasks" :key="task?.id">
