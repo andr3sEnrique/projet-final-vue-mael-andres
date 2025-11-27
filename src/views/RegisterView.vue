@@ -24,37 +24,36 @@ const handleRegister = () => {
   errorMsg.value = "";
 
   if (confirmPassword.value !== password.value) {
-    errorMsg.value = "Les mots de passes ne correspondent pas";
+    errorMsg.value = "Passwords do not match";
     return;
   }
 
   if (userRoles.value.length === 0) {
-    errorMsg.value = "Veuillez sélectionner au moins un rôle";
+    errorMsg.value = "You must select at least one role";
     return;
   }
 
   const success = authStore.register(name.value, email.value, password.value, userRoles.value);
 
   if (success) {
-    console.log("Utilisateur connecté");
     router.push({ name: "home" });
   } else {
-    errorMsg.value = "Email déjà utilisé";
+    errorMsg.value = "Email already used";
   }
 };
 
 watch(password, () => {
   let errors = [];
-  if (!password.value || password.value.length < 10) errors.push("Plus de 10 caractères");
-  if (!/[A-Z]/.test(password.value)) errors.push("Au moins une majuscule");
-  if (!/[a-z]/.test(password.value)) errors.push("Au moins une minuscule");
-  if (!/\d/.test(password.value)) errors.push("Au moins un chiffre");
+  if (!password.value || password.value.length < 10) errors.push("More than 10 characters");
+  if (!/[A-Z]/.test(password.value)) errors.push("At least one uppercase letter");
+  if (!/[a-z]/.test(password.value)) errors.push("At least one lowercase letter");
+  if (!/\d/.test(password.value)) errors.push("At least one number");
   passwordErrors.value = errors;
 });
 
 watch(confirmPassword, () => {
   let errors = [];
-  if (password.value !== confirmPassword.value) errors.push("Les mots de passes doivent être identiques");
+  if (password.value !== confirmPassword.value) errors.push("Passwords must be the sames");
   confirmPasswordErrors.value = errors;
 });
 </script>
@@ -62,11 +61,11 @@ watch(confirmPassword, () => {
 <template>
   <div class="login-container">
     <div class="login-card">
-      <h2>Créer un compte</h2>
+      <h2>Register</h2>
 
       <form @submit.prevent="handleRegister">
         <div class="form-group">
-          <label for="name">Prénom nom</label>
+          <label for="name">Name surname</label>
           <input type="name" id="name" v-model="name" required placeholder="Laura Manager" />
         </div>
 
@@ -76,30 +75,30 @@ watch(confirmPassword, () => {
         </div>
 
         <div class="form-group">
-          <label for="password">Mot de passe</label>
-          <input type="password" id="password" v-model="password" required placeholder="Votre mot de passe" />
+          <label for="password">Password</label>
+          <input type="password" id="password" v-model="password" required placeholder="Your pasword" />
           <div class="error-message" v-if="passwordErrors && passwordErrors.length > 0">
-            <p>Le mot de passe doit contenir :</p>
+            <p>Your password must contains :</p>
             <ul>
               <li v-for="err in passwordErrors">{{ err }}</li>
             </ul>
           </div>
-          <div class="password-valid" v-else-if="passwordErrors && passwordErrors.length === 0">Mot de passe correct</div>
+          <div class="password-valid" v-else-if="passwordErrors && passwordErrors.length === 0">Incorrect password</div>
         </div>
 
         <div class="form-group">
-          <label for="confirmPassword">Confirmer votre mot de passe</label>
-          <input type="password" id="confirmPassword" v-model="confirmPassword" required placeholder="Confirmer votre mot de passe" />
+          <label for="confirmPassword">Confirm your password</label>
+          <input type="password" id="confirmPassword" v-model="confirmPassword" required placeholder="Confimr your password" />
           <div class="error-message" v-if="confirmPasswordErrors && confirmPasswordErrors.length > 0">
             <ul>
               <li v-for="err in confirmPasswordErrors">{{ err }}</li>
             </ul>
           </div>
-          <div class="password-valid" v-else-if="confirmPasswordErrors && confirmPasswordErrors.length === 0">Confirmation du mot de passe correct</div>
+          <div class="password-valid" v-else-if="confirmPasswordErrors && confirmPasswordErrors.length === 0">Wrong password confirmation</div>
         </div>
 
         <div class="form-group">
-          <label>Rôles :</label>
+          <label>Roles :</label>
           <div class="checkbox-container">
             <div v-for="role in roles" :key="role.value" class="checkbox-item">
               <input type="checkbox" :id="role.value" :value="role.value" v-model="userRoles" />
@@ -111,8 +110,8 @@ watch(confirmPassword, () => {
           {{ errorMsg }}
         </div>
 
-        <button type="submit" class="btn-login">Créer un compte</button>
-        <div class="register-link">Déjà un compte ? <RouterLink :to="{ name: 'login' }">Ce connecter</RouterLink></div>
+        <button type="submit" class="btn-login">Register</button>
+        <div class="register-link">Already have an account ? <RouterLink :to="{ name: 'login' }">Login</RouterLink></div>
       </form>
     </div>
   </div>

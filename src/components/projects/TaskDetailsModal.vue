@@ -110,10 +110,10 @@ function closeModal() {
             </div>
 
             <div class="col-md-5">
-              <h6 class="text-muted mb-3">Comments</h6>
+              <h6 class="text-muted mb-3">Commentaires</h6>
 
               <div class="comments-list mb-3">
-                <div v-if="!task?.comments || task.comments.length === 0" class="text-center text-muted fst-italic mt-4">No comments yet.</div>
+                <div v-if="!task?.comments || task.comments.length === 0" class="text-center text-muted fst-italic mt-4">Pas encore de commentaires.</div>
 
                 <div v-else v-for="comment in task.comments" :key="comment?.id" class="comment-item mb-3">
                   <div class="d-flex justify-content-between">
@@ -131,7 +131,7 @@ function closeModal() {
                   <input v-model="newCommentText" type="text" class="form-control" placeholder="Write a comment..." required :disabled="isPostingComment" aria-label="Write a comment" />
                   <button class="btn btn-primary" type="submit" :disabled="isPostingComment" aria-label="Send comment">
                     <span v-if="isPostingComment" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                    <i v-else class="bi bi-send"></i> {{ isPostingComment ? "Sending..." : "Send" }}
+                    <i v-else class="bi bi-send"></i> {{ isPostingComment ? "Envoi..." : "Envoyer" }}
                   </button>
                 </div>
               </form>

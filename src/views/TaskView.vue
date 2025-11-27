@@ -22,7 +22,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["view-task", "status-changed",  "edit-task"]);
+const emit = defineEmits(["view-task", "status-changed", "edit-task"]);
 
 const store = useDataStore();
 const showStatusDropdown = ref(false);
@@ -65,9 +65,7 @@ const availableStatusTransitions = computed(() => {
 });
 
 const availableStatusObjects = computed(() => {
-  return availableStatusTransitions.value
-    .map((statusName) => store.status.find((s) => s.name === statusName))
-    .filter((s) => s !== undefined);
+  return availableStatusTransitions.value.map((statusName) => store.status.find((s) => s.name === statusName)).filter((s) => s !== undefined);
 });
 
 const canChangeStatus = computed(() => {
@@ -127,8 +125,8 @@ function handleEdit() {
 }
 
 function handleClickOutside(event) {
-  const dropdown = event.target.closest('.status-dropdown');
-  const badge = event.target.closest('.badge');
+  const dropdown = event.target.closest(".status-dropdown");
+  const badge = event.target.closest(".badge");
 
   if (!dropdown && !badge && showStatusDropdown.value) {
     showStatusDropdown.value = false;
@@ -136,11 +134,11 @@ function handleClickOutside(event) {
 }
 
 onMounted(() => {
-  document.addEventListener('click', handleClickOutside);
+  document.addEventListener("click", handleClickOutside);
 });
 
 onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside);
+  document.removeEventListener("click", handleClickOutside);
 });
 </script>
 
@@ -151,31 +149,14 @@ onUnmounted(() => {
         <h5 class="card-title mb-0 fw-bold text-dark">{{ task.title }}</h5>
 
         <div class="position-relative">
-          <span
-            class="badge rounded-pill"
-            :class="[statusBadgeClass, canChangeStatus ? 'cursor-pointer' : '']"
-            @click="handleStatusClick"
-            :style="{ cursor: canChangeStatus ? 'pointer' : 'default' }"
-            :title="canChangeStatus ? 'Haz clic para cambiar el estado' : 'No puedes cambiar el estado desde aquí'"
-          >
-            {{ statusName }} ▿
-          </span>
+          <span class="badge rounded-pill" :class="[statusBadgeClass, canChangeStatus ? 'cursor-pointer' : '']" @click="handleStatusClick" :style="{ cursor: canChangeStatus ? 'pointer' : 'default' }" :title="canChangeStatus ? 'Haz clic para cambiar el estado' : 'No puedes cambiar el estado desde aquí'"> {{ statusName }} ▿ </span>
 
-          <div
-            v-if="showStatusDropdown && availableStatusObjects.length > 0"
-            class="status-dropdown"
-            @click.stop
-          >
+          <div v-if="showStatusDropdown && availableStatusObjects.length > 0" class="status-dropdown" @click.stop>
             <div class="dropdown-header">
               <small class="text-muted">Change Status :</small>
             </div>
             <div class="dropdown-body">
-              <button
-                v-for="statusObj in availableStatusObjects"
-                :key="statusObj.id"
-                class="dropdown-item"
-                @click="handleStatusChange(statusObj.id)"
-              >
+              <button v-for="statusObj in availableStatusObjects" :key="statusObj.id" class="dropdown-item" @click="handleStatusChange(statusObj.id)">
                 <span class="status-dot" :class="getStatusColor(statusObj.name)"></span>
                 {{ statusObj.name }}
               </button>
@@ -200,8 +181,8 @@ onUnmounted(() => {
           </small>
         </div>
         <div class="d-flex gap-2">
-          <button class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 0.8rem" @click="handleClick">Voir</button>
-          <button v-if="canEdit" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size: 0.8rem" @click="handleEdit"><i class="bi bi-pencil"></i> Modifier</button>
+          <button class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 0.8rem" @click="handleClick">More</button>
+          <button v-if="canEdit" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size: 0.8rem" @click="handleEdit"><i class="bi bi-pencil"></i> Update</button>
         </div>
       </div>
     </div>

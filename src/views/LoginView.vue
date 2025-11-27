@@ -16,10 +16,9 @@ const handleLogin = () => {
   const success = authStore.login(email.value, password.value);
 
   if (success) {
-    console.log("Utilisateur connecté");
     router.push({ name: "home" });
   } else {
-    errorMsg.value = "Utilisateur inconnu ou mot de passe incorrect.";
+    errorMsg.value = "Unknowed user or incorrect password.";
   }
 };
 </script>
@@ -27,7 +26,7 @@ const handleLogin = () => {
 <template>
   <div class="login-container">
     <div class="login-card">
-      <h2>Connexion</h2>
+      <h2>Login</h2>
 
       <form @submit.prevent="handleLogin">
         <div class="form-group">
@@ -36,16 +35,16 @@ const handleLogin = () => {
         </div>
 
         <div class="form-group">
-          <label for="password">Mot de passe</label>
-          <input type="password" id="password" v-model="password" required placeholder="Votre mot de passe" />
+          <label for="password">Password</label>
+          <input type="password" id="password" v-model="password" required placeholder="Your password" />
         </div>
 
         <div v-if="errorMsg" class="error-message">
           {{ errorMsg }}
         </div>
 
-        <button type="submit" class="btn-login">Se connecter</button>
-        <div class="register-link">Pas encore de compte ? <RouterLink :to="{ name: 'register' }">Créer un compte</RouterLink></div>
+        <button type="submit" class="btn-login">Login</button>
+        <div class="register-link">No account yet ? <RouterLink :to="{ name: 'register' }">Register</RouterLink></div>
       </form>
     </div>
   </div>
