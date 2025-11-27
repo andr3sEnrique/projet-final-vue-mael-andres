@@ -16,6 +16,13 @@ export const useDataStore = defineStore("data", {
     currentUser: (state) => state.user,
   },
   actions: {
+    syncToLocalStorage() {
+      localStorage.setItem("user", JSON.stringify(this.user));
+      localStorage.setItem("managers", JSON.stringify(this.managers));
+      localStorage.setItem("projects", JSON.stringify(this.projects));
+      localStorage.setItem("tasks", JSON.stringify(this.tasks));
+      localStorage.setItem("users", JSON.stringify(this.users));
+    },
     login(email, password) {
       const user = seedData.users.find((u) => u.email === email && u.password === password);
       if (user) {
@@ -28,19 +35,18 @@ export const useDataStore = defineStore("data", {
     deleteProject(projectId) {
       this.projects = this.projects.filter((project) => project.id !== projectId);
       this.tasks = this.tasks.filter(t => t.projectId !== projectId);
-      localStorage.setItem("projects", JSON.stringify(this.projects));
-      localStorage.setItem("tasks", JSON.stringify(this.tasks));
+      this.syncToLocalStorage();
     },
     updateProject(updated) {
       const index = this.projects.findIndex((p) => p.id === updated.id);
       if (index !== -1) {
         this.projects[index] = updated;
-        localStorage.setItem("projects", JSON.stringify(this.projects));
+        this.syncToLocalStorage();
       }
     },
     createProject(project) {
       this.projects.push(project);
-      localStorage.setItem("projects", JSON.stringify(this.projects));
+      this.syncToLocalStorage();
       return project;
     },
     logout() {
@@ -62,12 +68,12 @@ export const useDataStore = defineStore("data", {
       };
 
       seedData.users.push(newUser);
+      this.users.push(newUser);
       this.user = newUser;
       if (newUser.roles.includes('manager')) {
         this.managers.push(newUser);
-        localStorage.setItem('managers', JSON.stringify(this.managers));
       }
-      localStorage.setItem("user", JSON.stringify(newUser));
+      this.syncToLocalStorage();
 
       return true;
     },
@@ -79,10 +85,11 @@ export const useDataStore = defineStore("data", {
         description,
         status,
         assignedTo,
-        comments,
+        comments: comments || [],
       };
 
       this.tasks.push(newTask);
+      this.syncToLocalStorage();
     },
 
     addComment(taskId, content, userId) {
@@ -99,6 +106,7 @@ export const useDataStore = defineStore("data", {
 
       if (!task.comments) task.comments = [];
       task.comments.push(newComment);
+      this.syncToLocalStorage();
     },
   },
 });

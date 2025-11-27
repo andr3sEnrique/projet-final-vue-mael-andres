@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useDataStore } from "@/stores/dataStore";
 import TaskView from "./TaskView.vue";
@@ -10,6 +10,30 @@ import Swal from 'sweetalert2';
 const route = useRoute();
 const router = useRouter();
 const store = useDataStore();
+
+const hasBothRoles = computed(() => store.user?.roles.includes("manager") && store.user?.roles.includes("developer"));
+const hasManagerRole = computed(() => store.user?.roles.includes("manager") && !store.user?.roles.includes("developer"));
+const hasDeveloperRole = computed(() => store.user?.roles.includes("developer") && !store.user?.roles.includes("manager"));
+
+const viewMode = ref(null);
+
+watch([hasBothRoles, hasManagerRole, hasDeveloperRole], () => {
+  if (viewMode.value === null) {
+    if (hasBothRoles.value) {
+      const savedMode = localStorage.getItem(`projectViewMode_${route.params.id}`);
+      viewMode.value = savedMode || 'manager';
+    } else if (hasManagerRole.value) {
+      viewMode.value = 'manager';
+    } else if (hasDeveloperRole.value) {
+      viewMode.value = 'developer';
+    }
+  }
+}, { immediate: true });
+
+const setViewMode = (mode) => {
+  viewMode.value = mode;
+  localStorage.setItem(`projectViewMode_${route.params.id}`, mode);
+};
 
 const handleDelete = async () => {
   const { isConfirmed } = await Swal.fire({
@@ -28,10 +52,24 @@ const handleDelete = async () => {
 };
 
 const projectId = route.params.id;
-const hasManagerRole = computed(() => store.user?.roles.includes("manager"));
 
 const project = computed(() => store.projects.find((p) => p.id === projectId));
 const tasks = computed(() => store.tasks.filter((task) => task.projectId === projectId));
+
+const myAssignedTasks = computed(() => {
+  return tasks.value.filter((task) => task.assignedTo === store.user?.id);
+});
+
+const otherTasks = computed(() => {
+  return tasks.value.filter((task) => task.assignedTo !== store.user?.id);
+});
+
+const orderedTasks = computed(() => {
+  if (viewMode.value === 'developer') {
+    return [...myAssignedTasks.value, ...otherTasks.value];
+  }
+  return tasks.value;
+});
 
 const canAddTasks = computed(() => {
   if (!project.value || !store.user) return false;
@@ -146,7 +184,11 @@ const newCommentText = ref("");
 function saveTask() {
   if (!newTask.value.title) return;
 
-  const { title, description, assignedTo, status } = newTask.value;
+  const { title, description, status } = newTask.value;
+  let assignedTo = newTask.value.assignedTo;
+  if (hasDeveloperRole) {
+    assignedTo = store.user.id;
+  }
   store.addTask(projectId, title, description, status, assignedTo, "");
   showModal.value = false;
   resetTask();
@@ -191,6 +233,21 @@ function formatDate(isoString) {
           <div class="d-flex align-items-center mb-3">
             <h1 class="display-6 mb-0 me-3">{{ project.title }}</h1>
 
+            <div v-if="hasBothRoles" class="ms-auto d-flex gap-2 me-3">
+              <button 
+                @click="setViewMode('developer')" 
+                :class="['btn', viewMode === 'developer' ? 'btn-primary' : 'btn-outline-primary']"
+              >
+                👨‍💻 Developer View
+              </button>
+              <button 
+                @click="setViewMode('manager')" 
+                :class="['btn', viewMode === 'manager' ? 'btn-primary' : 'btn-outline-primary']"
+              >
+                📊 Manager View
+              </button>
+            </div>
+
             <div v-if="hasManagerRole" class="ms-auto d-flex gap-2">
               <button @click="router.push(`/projects/${project.id}/update`)" class="btn btn-outline-primary">
                 ✏️
@@ -206,41 +263,6 @@ function formatDate(isoString) {
 
           <p class="text-muted mb-3">{{ project.description }}</p>
 
-          <div class="row g-2 mb-3">
-            <div class="col-md-6">
-              <div class="card border-0 shadow-sm h-100 text-white" :class="projectStatus.class">
-                <div class="card-body py-2 px-3">
-                  <div class="small text-uppercase fw-bold opacity-75 mb-1" style="font-size: 0.7rem; letter-spacing: 0.5px;">
-                    <i class="bi bi-flag-fill me-1"></i>
-                    Project Status
-                  </div>
-                  <div class="d-flex align-items-center">
-                    <i :class="projectStatus.icon" class="me-2"></i>
-                    <span class="fw-bold">{{ projectStatus.label }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="col-md-6">
-              <div class="card border-0 shadow-sm h-100 text-white" :class="projectHealth.class">
-                <div class="card-body py-2 px-3">
-                  <div class="small text-uppercase fw-bold opacity-75 mb-1" style="font-size: 0.7rem; letter-spacing: 0.5px;">
-                    <i class="bi bi-heart-pulse-fill me-1"></i>
-                    Project Health
-                  </div>
-                  <div class="d-flex align-items-center">
-                    <i :class="projectHealth.icon" class="me-2"></i>
-                    <span class="fw-bold">{{ projectHealth.label }}</span>
-                  </div>
-                  <small v-if="projectHealth.description" class="d-block mt-1 opacity-85" style="font-size: 0.8rem;">
-                    {{ projectHealth.description }}
-                  </small>
-                </div>
-              </div>
-            </div>
-          </div>
-
           <div class="d-flex align-items-center text-secondary small">
             <i class="bi bi-calendar-event me-2"></i>
             <span><strong>Timeline:</strong> {{ formatDate(project.startDate) }} → {{ formatDate(project.endDate) }}</span>
@@ -248,51 +270,123 @@ function formatDate(isoString) {
         </div>
       </div>
 
-      <hr />
+      <div v-if="viewMode === 'manager'" class="manager-view">
+        <hr />
 
-      <div class="mb-4">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <div>
-            <i class="bi bi-list-check me-1"></i>
-            <span class="fw-semibold">Overall Progress</span>
+        <div class="row g-2 mb-3">
+          <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100 text-white" :class="projectStatus.class">
+              <div class="card-body py-2 px-3">
+                <div class="small text-uppercase fw-bold opacity-75 mb-1" style="font-size: 0.7rem; letter-spacing: 0.5px;">
+                  <i class="bi bi-flag-fill me-1"></i>
+                  Project Status
+                </div>
+                <div class="d-flex align-items-center">
+                  <i :class="projectStatus.icon" class="me-2"></i>
+                  <span class="fw-bold">{{ projectStatus.label }}</span>
+                </div>
+              </div>
+            </div>
           </div>
-          <span class="badge bg-primary">{{ Math.round(progessPercentage) }}%</span>
-        </div>
-        <div class="progress" style="height: 24px;">
-          <div
-            class="progress-bar progress-bar-striped progress-bar-animated"
-            role="progressbar"
-            :class="projectHealth.class"
-            :style="{ width: progessPercentage + '%' }"
-            :aria-valuenow="progessPercentage"
-            aria-valuemin="0"
-            aria-valuemax="100">
-            <span v-if="progessPercentage > 10">{{ Math.round(progessPercentage) }}%</span>
+
+          <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100 text-white" :class="projectHealth.class">
+              <div class="card-body py-2 px-3">
+                <div class="small text-uppercase fw-bold opacity-75 mb-1" style="font-size: 0.7rem; letter-spacing: 0.5px;">
+                  <i class="bi bi-heart-pulse-fill me-1"></i>
+                  Project Health
+                </div>
+                <div class="d-flex align-items-center">
+                  <i :class="projectHealth.icon" class="me-2"></i>
+                  <span class="fw-bold">{{ projectHealth.label }}</span>
+                </div>
+                <small v-if="projectHealth.description" class="d-block mt-1 opacity-85" style="font-size: 0.8rem;">
+                  {{ projectHealth.description }}
+                </small>
+              </div>
+            </div>
           </div>
         </div>
+
+        <div class="mb-4">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div>
+              <i class="bi bi-list-check me-1"></i>
+              <span class="fw-semibold">Overall Progress</span>
+            </div>
+            <span class="badge bg-primary">{{ Math.round(progessPercentage) }}%</span>
+          </div>
+          <div class="progress" style="height: 24px;">
+            <div
+              class="progress-bar progress-bar-striped progress-bar-animated"
+              role="progressbar"
+              :class="projectHealth.class"
+              :style="{ width: progessPercentage + '%' }"
+              :aria-valuenow="progessPercentage"
+              aria-valuemin="0"
+              aria-valuemax="100">
+              <span v-if="progessPercentage > 10">{{ Math.round(progessPercentage) }}%</span>
+            </div>
+          </div>
+        </div>
+
+        <hr />
       </div>
-
-      <hr />
 
       <div class="row">
         <div class="col-12">
           <div class="card bg-light border-0">
             <div class="card-body text-center py-5">
-              <div v-if="tasks?.length > 0" class="text-start">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                  <h5 class="mb-0">
-                    <i class="bi bi-kanban me-2"></i>
-                    Project Tasks
-                    <span class="badge bg-secondary ms-2">{{ tasks.length }}</span>
-                  </h5>
-                  <button v-if="canAddTasks" class="btn btn-primary" @click="showModal = true">
-                    <i class="bi bi-plus-lg me-1"></i> New Task
-                  </button>
+              <div v-if="tasks.length > 0" class="text-start">
+                <div v-if="viewMode === 'developer'">
+                  <div v-if="myAssignedTasks.length > 0" class="mb-5">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                      <h5 class="mb-0">
+                        <i class="bi bi-person-check me-2"></i>
+                        My Assigned Tasks
+                        <span class="badge bg-primary ms-2">{{ myAssignedTasks.length }}</span>
+                      </h5>
+                      <button v-if="canAddTasks" class="btn btn-primary" @click="showModal = true">
+                        <i class="bi bi-plus-lg me-1"></i> New Task
+                      </button>
+                    </div>
+                    <div class="row row-cols-1 row-cols-md-2 g-3">
+                      <div class="col" v-for="task in myAssignedTasks" :key="task.id">
+                        <TaskView :task="task" @view-task="openTaskDetails" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div v-if="otherTasks.length > 0">
+                    <h5 class="mb-3">
+                      <i class="bi bi-kanban me-2"></i>
+                      Other Tasks
+                      <span class="badge bg-secondary ms-2">{{ otherTasks.length }}</span>
+                    </h5>
+                    <div class="row row-cols-1 row-cols-md-2 g-3">
+                      <div class="col" v-for="task in otherTasks" :key="task.id">
+                        <TaskView :task="task" @view-task="openTaskDetails" />
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                <div class="row row-cols-1 row-cols-md-2 g-3">
-                  <div class="col" v-for="task in tasks" :key="task.id">
-                    <TaskView :task="task" @view-task="openTaskDetails" />
+                <div v-else-if="viewMode === 'manager'">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">
+                      <i class="bi bi-kanban me-2"></i>
+                      Project Tasks
+                      <span class="badge bg-secondary ms-2">{{ tasks.length }}</span>
+                    </h5>
+                    <button v-if="canAddTasks" class="btn btn-primary" @click="showModal = true">
+                      <i class="bi bi-plus-lg me-1"></i> New Task
+                    </button>
+                  </div>
+
+                  <div class="row row-cols-1 row-cols-md-2 g-3">
+                    <div class="col" v-for="task in tasks" :key="task.id">
+                      <TaskView :task="task" @view-task="openTaskDetails" />
+                    </div>
                   </div>
                 </div>
               </div>
