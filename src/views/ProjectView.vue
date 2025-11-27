@@ -4,7 +4,7 @@ import { useRoute, useRouter } from "vue-router";
 import { useDataStore } from "@/stores/dataStore";
 import { statusEnum } from "@/data/statusEnum.js";
 import { getStatusName } from "@/utils/getStatusName";
-import Swal from 'sweetalert2';
+import Swal from "sweetalert2";
 import ProjectActions from "@/components/projects/ProjectActions.vue";
 import TaskFormModal from "@/components/projects/TaskFormModal.vue";
 import TaskDetailsModal from "@/components/projects/TaskDetailsModal.vue";
@@ -18,6 +18,7 @@ const store = useDataStore();
 const isDeleting = ref(false);
 const isCreatingTask = ref(false);
 const isPostingComment = ref(false);
+const taskToEdit = ref(null);
 
 const authorNameCache = new Map();
 
@@ -27,18 +28,22 @@ const hasDeveloperRole = computed(() => store.user?.roles?.includes("developer")
 
 const viewMode = ref(null);
 
-watch([hasBothRoles, hasManagerRole, hasDeveloperRole], () => {
-  if (viewMode.value === null) {
-    if (hasBothRoles.value) {
-      const savedMode = localStorage.getItem(`projectViewMode_${route.params.id}`);
-      viewMode.value = savedMode || 'manager';
-    } else if (hasManagerRole.value) {
-      viewMode.value = 'manager';
-    } else if (hasDeveloperRole.value) {
-      viewMode.value = 'developer';
+watch(
+  [hasBothRoles, hasManagerRole, hasDeveloperRole],
+  () => {
+    if (viewMode.value === null) {
+      if (hasBothRoles.value) {
+        const savedMode = localStorage.getItem(`projectViewMode_${route.params.id}`);
+        viewMode.value = savedMode || "manager";
+      } else if (hasManagerRole.value) {
+        viewMode.value = "manager";
+      } else if (hasDeveloperRole.value) {
+        viewMode.value = "developer";
+      }
     }
-  }
-}, { immediate: true });
+  },
+  { immediate: true }
+);
 
 const setViewMode = (mode) => {
   viewMode.value = mode;
@@ -50,18 +55,18 @@ const handleDelete = async () => {
   try {
     store.deleteProject(projectId);
     await Swal.fire({
-      title: 'Success!',
-      text: 'Project deleted successfully',
-      icon: 'success',
+      title: "Success!",
+      text: "Project deleted successfully",
+      icon: "success",
       timer: 2000,
-      showConfirmButton: false
+      showConfirmButton: false,
     });
-    router.push('/');
+    router.push("/");
   } catch (error) {
     Swal.fire({
-      title: 'Error!',
-      text: 'Failed to delete project',
-      icon: 'error'
+      title: "Error!",
+      text: "Failed to delete project",
+      icon: "error",
     });
   } finally {
     isDeleting.value = false;
@@ -100,11 +105,10 @@ const canAddTasks = computed(() => {
   return true;
 });
 
-
 const progessPercentage = computed(() => {
   if (!tasks.value || !Array.isArray(tasks.value) || tasks.value.length === 0) return 0;
   if (!store.status || !Array.isArray(store.status)) return 0;
-  
+
   let completedTasks = 0;
   for (const task of tasks.value) {
     if (!task) continue;
@@ -117,35 +121,35 @@ const progessPercentage = computed(() => {
 });
 
 const projectStatus = computed(() => {
-  if (!project.value) return { label: 'Unknown', class: 'bg-secondary', icon: 'bi-question-circle' };
-  if (!store.status || !Array.isArray(store.status)) return { label: 'Unknown', class: 'bg-secondary', icon: 'bi-question-circle' };
+  if (!project.value) return { label: "Unknown", class: "bg-secondary", icon: "bi-question-circle" };
+  if (!store.status || !Array.isArray(store.status)) return { label: "Unknown", class: "bg-secondary", icon: "bi-question-circle" };
 
-  const st = store.status.find(s => s?.id === project.value.status);
-  if (!st) return { label: 'Unknown', class: 'bg-secondary', icon: 'bi-question-circle' };
+  const st = store.status.find((s) => s?.id === project.value.status);
+  if (!st) return { label: "Unknown", class: "bg-secondary", icon: "bi-question-circle" };
 
   let cls;
   let icon;
 
   switch (st.name) {
     case statusEnum.DONE:
-      cls = 'bg-success';
-      icon = 'bi-check-circle-fill';
+      cls = "bg-success";
+      icon = "bi-check-circle-fill";
       break;
     case statusEnum.CANCELLED:
-      cls = 'bg-danger';
-      icon = 'bi-x-circle-fill';
+      cls = "bg-danger";
+      icon = "bi-x-circle-fill";
       break;
     case statusEnum.IN_PROGRESS:
-      cls = 'bg-warning text-dark';
-      icon = 'bi-arrow-repeat';
+      cls = "bg-warning text-dark";
+      icon = "bi-arrow-repeat";
       break;
     case statusEnum.TO_DO:
-      cls = 'bg-info text-dark';
-      icon = 'bi-clock';
+      cls = "bg-info text-dark";
+      icon = "bi-clock";
       break;
     default:
-      cls = 'bg-primary';
-      icon = 'bi-circle';
+      cls = "bg-primary";
+      icon = "bi-circle";
       break;
   }
 
@@ -153,14 +157,14 @@ const projectStatus = computed(() => {
 });
 
 const projectHealth = computed(() => {
-  if (!project.value) return { label: 'Unknown', class: 'bg-secondary', icon: 'bi-question-circle', description: '' };
+  if (!project.value) return { label: "Unknown", class: "bg-secondary", icon: "bi-question-circle", description: "" };
 
   if (progessPercentage.value === 100) {
     return {
-      label: 'Completed',
-      class: 'bg-success',
-      icon: 'bi-check-circle-fill',
-      description: 'Project completed'
+      label: "Completed",
+      class: "bg-success",
+      icon: "bi-check-circle-fill",
+      description: "Project completed",
     };
   }
 
@@ -171,26 +175,26 @@ const projectHealth = computed(() => {
 
   if (diffDays < 0) {
     return {
-      label: 'Delayed',
-      class: 'bg-danger',
-      icon: 'bi-exclamation-triangle-fill',
-      description: `${Math.abs(diffDays)} days overdue`
+      label: "Delayed",
+      class: "bg-danger",
+      icon: "bi-exclamation-triangle-fill",
+      description: `${Math.abs(diffDays)} days overdue`,
     };
   }
   if (diffDays <= 3) {
     return {
-      label: 'At Risk',
-      class: 'bg-warning text-dark',
-      icon: 'bi-exclamation-circle-fill',
-      description: `${diffDays} days remaining`
+      label: "At Risk",
+      class: "bg-warning text-dark",
+      icon: "bi-exclamation-circle-fill",
+      description: `${diffDays} days remaining`,
     };
   }
 
   return {
-    label: 'On Track',
-    class: 'bg-success',
-    icon: 'bi-check-circle',
-    description: `${diffDays} days remaining`
+    label: "On Track",
+    class: "bg-success",
+    icon: "bi-check-circle",
+    description: `${diffDays} days remaining`,
   };
 });
 
@@ -198,7 +202,7 @@ const showModal = ref(false);
 
 function getDefaultStatus() {
   const statusName = hasManagerRole.value ? statusEnum.VALID : statusEnum.PENDING;
-  return store.status.find(s => s.name === statusName)?.id;
+  return store.status.find((s) => s.name === statusName)?.id;
 }
 const newTask = ref({ title: "", description: "", assignedTo: "", status: getDefaultStatus() });
 const selectedTask = ref(null);
@@ -212,6 +216,11 @@ function handleTaskCreated() {
   showModal.value = false;
 }
 
+function handleTaskUpdated() {
+  showModal.value = false;
+  taskToEdit.value = null;
+}
+
 function handleCommentAdded() {}
 
 function handleViewModeChange(mode) {
@@ -220,17 +229,17 @@ function handleViewModeChange(mode) {
 
 function getAuthorName(userId) {
   if (!userId) return "Inconnu";
-  
+
   // Check cache first
   if (authorNameCache.has(userId)) {
     return authorNameCache.get(userId);
   }
-  
+
   if (!store.users || !Array.isArray(store.users)) return "Inconnu";
-  
+
   const user = store.users.find((u) => u?.id === userId);
   const name = user?.name || "Inconnu";
-  
+
   // Cache the result
   authorNameCache.set(userId, name);
   return name;
@@ -238,6 +247,21 @@ function getAuthorName(userId) {
 
 function formatDate(isoString) {
   return new Date(isoString).toLocaleString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+}
+
+function openCreateModal() {
+  taskToEdit.value = null;
+  showModal.value = true;
+}
+
+function openEditModal(task) {
+  taskToEdit.value = task;
+  showModal.value = true;
+}
+
+function handleTaskSaved() {
+  showModal.value = false;
+  taskToEdit.value = null;
 }
 </script>
 
@@ -255,17 +279,7 @@ function formatDate(isoString) {
           <div class="d-flex align-items-center mb-3">
             <h1 class="display-6 mb-0 me-3">{{ project.title }}</h1>
 
-            <ProjectActions 
-              v-if="project"
-              :project="project"
-              :hasBothRoles="hasBothRoles"
-              :hasManagerRole="hasManagerRole"
-              :viewMode="viewMode"
-              :isDeleting="isDeleting"
-              @delete="handleDelete"
-              @update-view-mode="handleViewModeChange"
-              class="ms-auto"
-            />
+            <ProjectActions v-if="project" :project="project" :hasBothRoles="hasBothRoles" :hasManagerRole="hasManagerRole" :viewMode="viewMode" :isDeleting="isDeleting" @delete="handleDelete" @update-view-mode="handleViewModeChange" class="ms-auto" />
           </div>
 
           <p class="text-muted mb-3">{{ project.description }}</p>
@@ -284,7 +298,7 @@ function formatDate(isoString) {
           <div class="col-md-6">
             <div class="card border-0 shadow-sm h-100 text-white" :class="projectStatus.class">
               <div class="card-body py-2 px-3">
-                <div class="small text-uppercase fw-bold opacity-75 mb-1" style="font-size: 0.7rem; letter-spacing: 0.5px;">
+                <div class="small text-uppercase fw-bold opacity-75 mb-1" style="font-size: 0.7rem; letter-spacing: 0.5px">
                   <i class="bi bi-flag-fill me-1"></i>
                   Project Status
                 </div>
@@ -299,7 +313,7 @@ function formatDate(isoString) {
           <div class="col-md-6">
             <div class="card border-0 shadow-sm h-100 text-white" :class="projectHealth.class">
               <div class="card-body py-2 px-3">
-                <div class="small text-uppercase fw-bold opacity-75 mb-1" style="font-size: 0.7rem; letter-spacing: 0.5px;">
+                <div class="small text-uppercase fw-bold opacity-75 mb-1" style="font-size: 0.7rem; letter-spacing: 0.5px">
                   <i class="bi bi-heart-pulse-fill me-1"></i>
                   Project Health
                 </div>
@@ -307,7 +321,7 @@ function formatDate(isoString) {
                   <i :class="projectHealth.icon" class="me-2"></i>
                   <span class="fw-bold">{{ projectHealth.label }}</span>
                 </div>
-                <small v-if="projectHealth.description" class="d-block mt-1 opacity-85" style="font-size: 0.8rem;">
+                <small v-if="projectHealth.description" class="d-block mt-1 opacity-85" style="font-size: 0.8rem">
                   {{ projectHealth.description }}
                 </small>
               </div>
@@ -323,15 +337,8 @@ function formatDate(isoString) {
             </div>
             <span class="badge bg-primary">{{ Math.round(progessPercentage) }}%</span>
           </div>
-          <div class="progress" style="height: 24px;">
-            <div
-              class="progress-bar progress-bar-striped progress-bar-animated"
-              role="progressbar"
-              :class="projectHealth.class"
-              :style="{ width: progessPercentage + '%' }"
-              :aria-valuenow="progessPercentage"
-              aria-valuemin="0"
-              aria-valuemax="100">
+          <div class="progress" style="height: 24px">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" :class="projectHealth.class" :style="{ width: progessPercentage + '%' }" :aria-valuenow="progessPercentage" aria-valuemin="0" aria-valuemax="100">
               <span v-if="progessPercentage > 10">{{ Math.round(progessPercentage) }}%</span>
             </div>
           </div>
@@ -344,44 +351,17 @@ function formatDate(isoString) {
         <div class="col-12">
           <div class="card bg-light border-0">
             <div class="card-body text-start py-4 px-4">
-              <DeveloperTasksView 
-                v-if="viewMode === 'developer'"
-                :tasks="tasks"
-                :userId="store.user?.id"
-                :canAddTasks="canAddTasks"
-                @view-task="openTaskDetails"
-                @add-task="showModal = true"
-              />
+              <DeveloperTasksView v-if="viewMode === 'developer'" :tasks="tasks" :userId="store.user?.id" :canAddTasks="canAddTasks" @view-task="openTaskDetails" @add-task="openCreateModal" />
 
-              <ManagerTasksView 
-                v-else-if="viewMode === 'manager'"
-                :tasks="tasks"
-                :canAddTasks="canAddTasks"
-                @view-task="openTaskDetails"
-                @add-task="showModal = true"
-              />
+              <ManagerTasksView v-else-if="viewMode === 'manager'" :tasks="tasks" :canAddTasks="canAddTasks" @view-task="openTaskDetails" @add-task="openCreateModal" @edit-task="openEditModal" />
             </div>
           </div>
         </div>
       </div>
 
-      <TaskFormModal 
-        :isOpen="showModal"
-        :projectId="projectId"
-        :hasManagerRole="hasManagerRole"
-        :hasDeveloperRole="hasDeveloperRole"
-        :isCreating="isCreatingTask"
-        @close="showModal = false"
-        @task-created="handleTaskCreated"
-      />
+      <TaskFormModal :isOpen="showModal" :projectId="projectId" :hasManagerRole="hasManagerRole" :hasDeveloperRole="hasDeveloperRole" :isCreating="isCreatingTask" :taskToEdit="taskToEdit" @close="showModal = false" @task-created="handleTaskCreated" @task-updated="handleTaskUpdated" />
 
-      <TaskDetailsModal 
-        :task="selectedTask"
-        :isOpen="!!selectedTask"
-        :isPostingComment="isPostingComment"
-        @close="selectedTask = null"
-        @comment-added="handleCommentAdded"
-      />
+      <TaskDetailsModal :task="selectedTask" :isOpen="!!selectedTask" :isPostingComment="isPostingComment" @close="selectedTask = null" @comment-added="handleCommentAdded" />
     </div>
   </div>
 </template>
@@ -393,6 +373,6 @@ function formatDate(isoString) {
 
 .card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15) !important;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
 }
 </style>

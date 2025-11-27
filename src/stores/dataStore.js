@@ -3,8 +3,8 @@ import { seedData } from "../data/seed";
 
 export const useDataStore = defineStore("data", {
   state: () => ({
-    user: JSON.parse(localStorage.getItem('user')) || null,
-    managers: JSON.parse(localStorage.getItem('managers')) || seedData.users.filter(u => u.roles.includes('manager')),
+    user: JSON.parse(localStorage.getItem("user")) || null,
+    managers: JSON.parse(localStorage.getItem("managers")) || seedData.users.filter((u) => u.roles.includes("manager")),
     projects: JSON.parse(localStorage.getItem("projects")) || seedData.projects,
     status: seedData.status,
     tasks: JSON.parse(localStorage.getItem("tasks")) || seedData.tasks,
@@ -34,7 +34,7 @@ export const useDataStore = defineStore("data", {
     },
     deleteProject(projectId) {
       this.projects = this.projects.filter((project) => project.id !== projectId);
-      this.tasks = this.tasks.filter(t => t.projectId !== projectId);
+      this.tasks = this.tasks.filter((t) => t.projectId !== projectId);
       this.syncToLocalStorage();
     },
     updateProject(updated) {
@@ -70,7 +70,7 @@ export const useDataStore = defineStore("data", {
       seedData.users.push(newUser);
       this.users.push(newUser);
       this.user = newUser;
-      if (newUser.roles.includes('manager')) {
+      if (newUser.roles.includes("manager")) {
         this.managers.push(newUser);
       }
       this.syncToLocalStorage();
@@ -106,6 +106,13 @@ export const useDataStore = defineStore("data", {
 
       if (!task.comments) task.comments = [];
       task.comments.push(newComment);
+      this.syncToLocalStorage();
+    },
+
+    updateTask(updatedTask) {
+      const taskIndex = this.tasks.findIndex((t) => t.id === updatedTask.id);
+      if (!taskIndex) return;
+      this.tasks[taskIndex] = { ...this.tasks[taskIndex], ...updatedTask };
       this.syncToLocalStorage();
     },
   },

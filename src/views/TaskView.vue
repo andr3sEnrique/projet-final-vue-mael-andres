@@ -9,9 +9,13 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  canEdit: {
+    type: Boolean,
+    default: false,
+  },
 });
 
-const emit = defineEmits(["view-task"]);
+const emit = defineEmits(["view-task", "edit-task"]);
 
 const store = useDataStore();
 
@@ -21,7 +25,6 @@ const assignedUser = computed(() => {
 
 const statusName = computed(() => getStatusName(store.status, props.task));
 
-
 const statusBadgeClass = computed(() => {
   switch (statusName.value) {
     case statusEnum.VALID:
@@ -30,24 +33,21 @@ const statusBadgeClass = computed(() => {
       return "bg-warning text-dark";
     case statusEnum.TO_DO:
       return "bg-secondary";
-      case statusEnum.CANCELLED:
+    case statusEnum.CANCELLED:
       return "bg-danger";
-      case statusEnum.DONE:
+    case statusEnum.DONE:
       return "bg-primary";
     default:
       return "bg-light text-dark border";
   }
 });
 
-const formatStatus = (status) => {
-  return status
-    .replace("_", " ")
-    .toLowerCase()
-    .replace(/\b\w/g, (l) => l.toUpperCase());
-};
-
 function handleClick() {
   emit("view-task", props.task);
+}
+
+function handleEdit() {
+  emit("edit-task", props.task);
 }
 </script>
 
@@ -77,8 +77,10 @@ function handleClick() {
             {{ assignedUser ? assignedUser.name : "Non assigné" }}
           </small>
         </div>
-
-        <button class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 0.8rem" @click="handleClick">Voir</button>
+        <div class="d-flex gap-2">
+          <button class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 0.8rem" @click="handleClick">Voir</button>
+          <button v-if="canEdit" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size: 0.8rem" @click="handleEdit"><i class="bi bi-pencil"></i> Modifier</button>
+        </div>
       </div>
     </div>
   </div>
