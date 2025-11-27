@@ -133,12 +133,6 @@ const projectHealth = computed(() => {
   };
 });
 
-function formatDate(dateString) {
-  if (!dateString) return '';
-  const date = new Date(dateString);
-  return date.toLocaleDateString();
-}
-
 const showModal = ref(false);
 
 function getDefaultStatus() {
@@ -169,7 +163,7 @@ function openTaskDetails(task) {
 function postComment() {
   if (!newCommentText.value.trim()) return;
 
-  store.addComment(selectedTask.value.id, newCommentText.value, store.currentUser.id);
+  store.addComment(selectedTask.value.id, newCommentText.value, store.user.id);
   newCommentText.value = "";
 }
 
@@ -188,7 +182,7 @@ function formatDate(isoString) {
     <div v-if="!project" class="alert alert-danger">
       <h4 class="alert-heading">Project not found</h4>
       <p>Project with ID {{ projectId }} does not exist</p>
-      <button @click="goBack" class="btn btn-outline-danger">Go back</button>
+      <button @click="router.push('/')" class="btn btn-outline-danger">Go back</button>
     </div>
 
     <div v-else>
@@ -349,26 +343,27 @@ function formatDate(isoString) {
                   ></textarea>
                 </div>
 
-                    <div v-if="hasManagerRole" class="mb-3">
-                      <label class="form-label fw-semibold">Assign to</label>
-                      <select v-model="newTask.assignedTo" class="form-select">
-                        <option disabled value="">Select a team member...</option>
-                        <option v-for="user in store.users" :key="user.id" :value="user.id">{{ user.name }} ({{ user.roles.join(", ") }})</option>
-                      </select>
-                    </div>
-
-                    <div class="modal-footer">
-                      <button type="button" @click="showModal = false" class="btn btn-secondary">Cancel</button>
-                      <button type="submit" class="btn btn-success">Create Task</button>
-                    </div>
-                  </form>
+                <div v-if="hasManagerRole" class="mb-3">
+                  <label class="form-label fw-semibold">Assign to</label>
+                  <select v-model="newTask.assignedTo" class="form-select">
+                    <option disabled value="">Select a team member...</option>
+                    <option v-for="user in store.users" :key="user.id" :value="user.id">{{ user.name }} ({{ user.roles.join(", ") }})</option>
+                  </select>
                 </div>
               </div>
-            </div>
+              <div class="modal-footer">
+                <button type="button" @click="showModal = false" class="btn btn-secondary">Cancel</button>
+                <button type="submit" class="btn btn-success">Create Task</button>
+              </div>
+            </form>
           </div>
-          <div v-if="selectedTask" class="modal-overlay" @click.self="selectedTask = null">
-            <div class="modal-card modal-lg">
-              <div class="d-flex justify-content-between align-items-start mb-3">
+        </div>
+      </div>
+
+      <div v-if="selectedTask" class="modal d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);" @click.self="selectedTask = null">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="d-flex justify-content-between align-items-start mb-3">
                 <h3 class="mb-0">{{ selectedTask.title }}</h3>
                 <button @click="selectedTask = null" class="btn-close"></button>
               </div>
@@ -408,7 +403,6 @@ function formatDate(isoString) {
                     </div>
                   </form>
                 </div>
-              </div>
             </div>
           </div>
         </div>
@@ -431,5 +425,13 @@ function formatDate(isoString) {
   max-height: 300px;
   overflow-y: auto;
   padding-right: 5px;
+}
+
+.modal-dialog {
+  max-width: 900px;
+}
+
+.modal-content {
+  border-radius: 0.5rem;
 }
 </style>
