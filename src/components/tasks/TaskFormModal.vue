@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import {computed, ref, watch} from 'vue';
 import Swal from 'sweetalert2';
 import { useDataStore } from '@/stores/dataStore';
 import { statusEnum } from '@/data/statusEnum.js';
@@ -24,10 +24,14 @@ const props = defineProps({
   isCreating: {
     type: Boolean,
     default: false
-  }
+  },
+  taskToEdit: {
+    type: Object,
+    default: null,
+  },
 });
 
-const emit = defineEmits(['close', 'task-created']);
+const emit = defineEmits(['close', 'task-created', "task-updated"]);
 
 const store = useDataStore();
 
@@ -37,6 +41,26 @@ const newTask = ref({
   assignedTo: '',
   status: getDefaultStatus()
 });
+
+const isEditMode = computed(() => !!props.taskToEdit);
+
+watch(
+    () => props.taskToEdit,
+    (newVal) => {
+      if (newVal) {
+        newTask.value = {
+          title: newVal.title,
+          description: newVal.description,
+          assignedTo: newVal.assignedTo || "",
+          status: newVal.status,
+        };
+      } else {
+        resetTask();
+      }
+    },
+    { immediate: true }
+);
+
 
 function getDefaultStatus() {
   const statusName = props.hasManagerRole ? statusEnum.VALID : statusEnum.PENDING;
@@ -63,32 +87,52 @@ async function saveTask() {
   }
 
   try {
-    const { title, description, status } = newTask.value;
-    let assignedTo = newTask.value.assignedTo;
-    
-    if (props.hasDeveloperRole) {
-      assignedTo = store.user?.id;
+    if (isEditMode.value) {
+      const updatedTaskData = {
+        id: props.taskToEdit.id,
+        projectId: props.projectId,
+        ...newTask.value,
+      };
+
+      store.updateTask(updatedTaskData);
+
+      Swal.fire({
+        title: "Success!",
+        text: "Task updated successfully",
+        icon: "success",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+      emit("task-updated");
+    } else {
+      const { title, description, status } = newTask.value;
+      let assignedTo = newTask.value.assignedTo;
+
+      if (props.hasDeveloperRole) {
+        assignedTo = store.user?.id;
+      }
+
+      store.addTask(props.projectId, title, description, status, assignedTo, "");
+
+      Swal.fire({
+        title: "Success!",
+        text: "Task created successfully",
+        icon: "success",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+
+      emit("task-created");
     }
-
-    store.addTask(props.projectId, title, description, status, assignedTo, '');
-
-    Swal.fire({
-      title: 'Success!',
-      text: 'Task created successfully',
-      icon: 'success',
-      timer: 2000,
-      showConfirmButton: false
-    });
-
-    emit('task-created');
     closeModal();
   } catch (error) {
     Swal.fire({
-      title: 'Error!',
-      text: 'Failed to create task',
-      icon: 'error'
+      title: "Error!",
+      text: "Failed to create task",
+      icon: "error",
     });
   }
+
 }
 
 function closeModal() {
@@ -102,9 +146,7 @@ function closeModal() {
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="taskModalTitle">
-            <i class="bi bi-plus-circle me-2"></i>New Task
-          </h5>
+          <h5 class="modal-title" id="taskModalTitle"><i class="bi bi-plus-circle me-2"></i>{{ isEditMode ? "Edit Task" : "New Task" }}</h5>
           <button type="button" class="btn-close" @click="closeModal" aria-label="Close modal"></button>
         </div>
 
@@ -154,7 +196,7 @@ function closeModal() {
             <button type="button" @click="closeModal" class="btn btn-secondary" :disabled="isCreating">Cancel</button>
             <button type="submit" class="btn btn-success" :disabled="isCreating">
               <span v-if="isCreating" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-              {{ isCreating ? 'Creating...' : 'Create Task' }}
+              {{ isEditMode ? "Save Changes" : "Create Task" }}
             </button>
           </div>
         </form>

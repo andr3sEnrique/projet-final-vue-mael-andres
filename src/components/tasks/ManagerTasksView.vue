@@ -47,7 +47,7 @@ const displayTasks = () => {
 
       <div class="row row-cols-1 row-cols-md-2 g-3">
         <div class="col" v-for="task in displayTasks()" :key="task?.id">
-          <TaskView v-if="task" :task="task" view-mode="manager" @view-task="emit('view-task', $event)" @status-changed="emit('status-changed', $event)" />
+          <TaskView v-if="task" :task="task" view-mode="manager" @view-task="emit('view-task', $event)" :canEdit="true" @edit-task="$emit('edit-task', $event)" @status-changed="emit('status-changed', $event)" />
         </div>
       </div>
     </div>
