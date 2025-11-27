@@ -1,15 +1,15 @@
 <script setup>
-import { computed, ref, watch } from "vue";
+import { computed, onBeforeMount, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useDataStore } from "@/stores/dataStore";
 import { statusEnum } from "@/data/statusEnum.js";
 import { getStatusName } from "@/utils/getStatusName";
 import Swal from "sweetalert2";
 import ProjectActions from "@/components/projects/ProjectActions.vue";
-import TaskFormModal from "@/components/projects/TaskFormModal.vue";
-import TaskDetailsModal from "@/components/projects/TaskDetailsModal.vue";
-import DeveloperTasksView from "@/components/projects/DeveloperTasksView.vue";
-import ManagerTasksView from "@/components/projects/ManagerTasksView.vue";
+import TaskFormModal from "@/components/tasks/TaskFormModal.vue";
+import TaskDetailsModal from "@/components/tasks/TaskDetailsModal.vue";
+import DeveloperTasksView from "@/components/tasks/DeveloperTasksView.vue";
+import ManagerTasksView from "@/components/tasks/ManagerTasksView.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -20,13 +20,26 @@ const isCreatingTask = ref(false);
 const isPostingComment = ref(false);
 const taskToEdit = ref(null);
 
-const authorNameCache = new Map();
 
 const hasBothRoles = computed(() => store.user?.roles?.includes("manager") && store.user?.roles?.includes("developer"));
 const hasManagerRole = computed(() => store.user?.roles?.includes("manager") && !store.user?.roles?.includes("developer"));
 const hasDeveloperRole = computed(() => store.user?.roles?.includes("developer") && !store.user?.roles?.includes("manager"));
 
 const viewMode = ref(null);
+const projectId = route.params.id;
+
+onBeforeMount(() => {
+  if (store.user?.roles?.includes("manager")) {
+    return;
+  }
+
+  if (store.user?.roles?.includes("developer")) {
+    const developperHasTasks = store.tasks.some((task) => task.projectId === projectId && task.assignedTo === store.user.id);
+    if (!developperHasTasks) {
+      router.push({ name: 'home' });
+    }
+  }
+})
 
 watch(
   [hasBothRoles, hasManagerRole, hasDeveloperRole],
@@ -73,8 +86,6 @@ const handleDelete = async () => {
   }
 };
 
-const projectId = route.params.id;
-
 const project = computed(() => {
   if (!store.projects || !Array.isArray(store.projects)) return null;
   return store.projects.find((p) => p?.id === projectId);
@@ -104,6 +115,12 @@ const canAddTasks = computed(() => {
 
   return true;
 });
+
+const isManagerInProject = computed(() => {
+  if (!project.value || !store.user?.id) return false;
+  return project.value?.managerIds?.includes(store.user.id) || false;
+});
+
 
 const progessPercentage = computed(() => {
   if (!tasks.value || !Array.isArray(tasks.value) || tasks.value.length === 0) return 0;
@@ -227,24 +244,6 @@ function handleViewModeChange(mode) {
   setViewMode(mode);
 }
 
-function getAuthorName(userId) {
-  if (!userId) return "Inconnu";
-
-  // Check cache first
-  if (authorNameCache.has(userId)) {
-    return authorNameCache.get(userId);
-  }
-
-  if (!store.users || !Array.isArray(store.users)) return "Inconnu";
-
-  const user = store.users.find((u) => u?.id === userId);
-  const name = user?.name || "Inconnu";
-
-  // Cache the result
-  authorNameCache.set(userId, name);
-  return name;
-}
-
 function formatDate(isoString) {
   return new Date(isoString).toLocaleString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 }
@@ -279,7 +278,18 @@ function handleTaskSaved() {
           <div class="d-flex align-items-center mb-3">
             <h1 class="display-6 mb-0 me-3">{{ project.title }}</h1>
 
-            <ProjectActions v-if="project" :project="project" :hasBothRoles="hasBothRoles" :hasManagerRole="hasManagerRole" :viewMode="viewMode" :isDeleting="isDeleting" @delete="handleDelete" @update-view-mode="handleViewModeChange" class="ms-auto" />
+            <ProjectActions 
+              v-if="project"
+              :project="project"
+              :hasBothRoles="hasBothRoles"
+              :hasManagerRole="hasManagerRole"
+              :isManagerInProject="isManagerInProject"
+              :viewMode="viewMode"
+              :isDeleting="isDeleting"
+              @delete="handleDelete"
+              @update-view-mode="handleViewModeChange"
+              class="ms-auto"
+            />
           </div>
 
           <p class="text-muted mb-3">{{ project.description }}</p>
@@ -351,9 +361,24 @@ function handleTaskSaved() {
         <div class="col-12">
           <div class="card bg-light border-0">
             <div class="card-body text-start py-4 px-4">
-              <DeveloperTasksView v-if="viewMode === 'developer'" :tasks="tasks" :userId="store.user?.id" :canAddTasks="canAddTasks" @view-task="openTaskDetails" @add-task="openCreateModal" />
+              <DeveloperTasksView 
+                v-if="viewMode === 'developer'"
+                :tasks="tasks"
+                :userId="store.user?.id"
+                :canAddTasks="canAddTasks"
+                @view-task="openTaskDetails"
+                @add-task="openCreateModal"
+                @status-changed="handleStatusChanged"
+              />
 
-              <ManagerTasksView v-else-if="viewMode === 'manager'" :tasks="tasks" :canAddTasks="canAddTasks" @view-task="openTaskDetails" @add-task="openCreateModal" @edit-task="openEditModal" />
+              <ManagerTasksView 
+                v-else-if="viewMode === 'manager'"
+                :tasks="tasks"
+                :canAddTasks="canAddTasks"
+                @view-task="openTaskDetails"
+                @add-task="openCreateModal" @edit-task="openEditModal"
+                @status-changed="handleStatusChanged"
+              />
             </div>
           </div>
         </div>

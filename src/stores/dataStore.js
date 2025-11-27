@@ -115,5 +115,15 @@ export const useDataStore = defineStore("data", {
       this.tasks[taskIndex] = { ...this.tasks[taskIndex], ...updatedTask };
       this.syncToLocalStorage();
     },
+
+    updateTaskStatus(taskId, newStatus) {
+      const task = this.tasks?.find((t) => t.id === taskId);
+
+      if (!task) return false;
+
+      task.status = newStatus;
+      this.syncToLocalStorage();
+      return true;
+    },
   },
 });

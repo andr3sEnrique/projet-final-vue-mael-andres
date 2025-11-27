@@ -29,12 +29,10 @@ const statusOptions = computed(() => {
 const filteredTasks = computed(() => {
   let result = [...props.tasks];
 
-  // Filtrar por status
   if (selectedStatusId.value) {
     result = result.filter(task => task.status === selectedStatusId.value);
   }
 
-  // Filtrar por búsqueda (título o descripción)
   if (searchQuery.value.trim()) {
     const query = searchQuery.value.toLowerCase();
     result = result.filter(task => 
@@ -50,7 +48,6 @@ const applyFilters = () => {
   emit('filtered-tasks', filteredTasks.value);
 };
 
-// Emitir tareas filtradas cuando cambien
 const handleSearchChange = () => {
   applyFilters();
 };
@@ -67,25 +64,23 @@ const handleAddTask = () => {
 <template>
   <div class="task-filters-bar mb-4">
     <div class="row g-3 align-items-end">
-      <!-- Input de búsqueda -->
       <div class="col-12 col-md-6">
         <label for="searchInput" class="form-label">
-          <i class="bi bi-search me-2"></i>Buscar por título o descripción
+          <i class="bi bi-search me-2"></i>Search by title or description
         </label>
         <input 
           id="searchInput"
           v-model="searchQuery" 
           type="text" 
           class="form-control"
-          placeholder="Escribe para buscar..."
+          placeholder="Type to search..."
           @input="handleSearchChange"
         />
       </div>
 
-      <!-- Select de status -->
       <div class="col-12 col-md-4">
         <label for="statusSelect" class="form-label">
-          <i class="bi bi-funnel me-2"></i>Filtrar por status
+          <i class="bi bi-funnel me-2"></i>Filter by status
         </label>
         <select 
           id="statusSelect"
@@ -93,7 +88,7 @@ const handleAddTask = () => {
           class="form-select"
           @change="handleStatusChange"
         >
-          <option value="">Todos los status</option>
+          <option value="">All</option>
           <option 
             v-for="status in statusOptions" 
             :key="status.id"
@@ -117,11 +112,10 @@ const handleAddTask = () => {
       </div>
     </div>
 
-    <!-- Mostrar cantidad de tareas filtradas -->
     <div v-if="searchQuery || selectedStatusId" class="mt-2">
       <small class="text-muted">
         <i class="bi bi-info-circle me-1"></i>
-        Se muestran {{ filteredTasks.length }} de {{ tasks.length }} tareas
+        Showing {{ filteredTasks.length }} of {{ tasks.length }} tasks
       </small>
     </div>
   </div>

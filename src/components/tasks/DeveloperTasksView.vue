@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import TaskView from '@/views/TaskView.vue';
-import TaskFiltersBar from './TaskFiltersBar.vue';
+import TaskFiltersBar from '../tasks/TaskFiltersBar.vue';
 
 const props = defineProps({
   tasks: {
@@ -18,7 +18,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['view-task', 'add-task']);
+const emit = defineEmits(['view-task', 'add-task', 'status-changed']);
 
 const filteredTasks = ref([]);
 
@@ -58,7 +58,7 @@ const handleFilteredTasks = (tasks) => {
       </div>
       <div class="row row-cols-1 row-cols-md-2 g-3">
         <div class="col" v-for="task in myAssignedTasks" :key="task?.id">
-          <TaskView v-if="task" :task="task" @view-task="emit('view-task', $event)" />
+          <TaskView v-if="task" :task="task" view-mode="developer" @view-task="emit('view-task', $event)" @status-changed="emit('status-changed', $event)" />
         </div>
       </div>
   
@@ -74,7 +74,7 @@ const handleFilteredTasks = (tasks) => {
       </div>
       <div class="row row-cols-1 row-cols-md-2 g-3">
         <div class="col" v-for="task in otherTasks" :key="task?.id">
-          <TaskView v-if="task" :task="task" @view-task="emit('view-task', $event)" />
+          <TaskView v-if="task" :task="task" view-mode="developer" @view-task="emit('view-task', $event)" @status-changed="emit('status-changed', $event)" />
         </div>
       </div>
     </div>

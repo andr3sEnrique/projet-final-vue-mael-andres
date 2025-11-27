@@ -1,8 +1,10 @@
 <script setup>
-import { computed } from "vue";
+import { computed, ref, onMounted, onUnmounted } from "vue";
 import { useDataStore } from "@/stores/dataStore";
 import { statusEnum } from "@/data/statusEnum.js";
 import { getStatusName } from "@/utils/getStatusName";
+import { getAvailableStatusTransitions } from "@/utils/statusTransitions";
+import Swal from "sweetalert2";
 
 const props = defineProps({
   task: {
@@ -13,11 +15,17 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  viewMode: {
+    type: String,
+    default: "developer",
+    validator: (value) => ["developer", "manager"].includes(value),
+  },
 });
 
-const emit = defineEmits(["view-task", "edit-task"]);
+const emit = defineEmits(["view-task", "status-changed",  "edit-task"]);
 
 const store = useDataStore();
+const showStatusDropdown = ref(false);
 
 const assignedUser = computed(() => {
   return store.users?.find((u) => u.id === props.task.assignedTo);
@@ -42,24 +50,138 @@ const statusBadgeClass = computed(() => {
   }
 });
 
+const userRole = computed(() => {
+  return props.viewMode;
+});
+
+const currentStatusName = computed(() => {
+  const statusObj = store.status?.find((s) => s.id === props.task.status);
+  return statusObj?.name || null;
+});
+
+const availableStatusTransitions = computed(() => {
+  if (!userRole.value || !currentStatusName.value) return [];
+  return getAvailableStatusTransitions(currentStatusName.value, userRole.value);
+});
+
+const availableStatusObjects = computed(() => {
+  return availableStatusTransitions.value
+    .map((statusName) => store.status.find((s) => s.name === statusName))
+    .filter((s) => s !== undefined);
+});
+
+const canChangeStatus = computed(() => {
+  return availableStatusTransitions.value.length > 0;
+});
+
+function handleStatusClick() {
+  if (!canChangeStatus.value) {
+    Swal.fire({
+      title: "Not Allowed!",
+      text: "You cannot change the status of this task from its current status",
+      icon: "info",
+      timer: 2000,
+      showConfirmButton: false,
+    });
+    return;
+  }
+  showStatusDropdown.value = !showStatusDropdown.value;
+}
+
+async function handleStatusChange(newStatusId) {
+  const newStatusObj = store.status.find((s) => s.id === newStatusId);
+  if (!newStatusObj) return;
+
+  try {
+    const success = store.updateTaskStatus(props.task.id, newStatusId);
+    if (success) {
+      showStatusDropdown.value = false;
+      emit("status-changed", {
+        taskId: props.task.id,
+        newStatus: newStatusId,
+        newStatusName: newStatusObj.name,
+      });
+
+      Swal.fire({
+        title: "Success!",
+        text: `Status changed to ${newStatusObj.name}`,
+        icon: "success",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    }
+  } catch (error) {
+    Swal.fire({
+      title: "Error!",
+      text: "Failed to change status",
+      icon: "error",
+    });
+  }
+}
+
 function handleClick() {
   emit("view-task", props.task);
 }
-
 function handleEdit() {
   emit("edit-task", props.task);
 }
+
+function handleClickOutside(event) {
+  const dropdown = event.target.closest('.status-dropdown');
+  const badge = event.target.closest('.badge');
+
+  if (!dropdown && !badge && showStatusDropdown.value) {
+    showStatusDropdown.value = false;
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside);
+});
 </script>
 
 <template>
-  <div class="card mb-3 task-card border-0 shadow-sm">
+  <div class="card mb-3 task-card border-0 shadow-sm" :class="{ 'dropdown-active': showStatusDropdown }">
     <div class="card-body">
       <div class="d-flex justify-content-between align-items-start mb-2">
         <h5 class="card-title mb-0 fw-bold text-dark">{{ task.title }}</h5>
 
-        <span class="badge rounded-pill" :class="statusBadgeClass">
-          {{ statusName }}
-        </span>
+        <div class="position-relative">
+          <span
+            class="badge rounded-pill"
+            :class="[statusBadgeClass, canChangeStatus ? 'cursor-pointer' : '']"
+            @click="handleStatusClick"
+            :style="{ cursor: canChangeStatus ? 'pointer' : 'default' }"
+            :title="canChangeStatus ? 'Haz clic para cambiar el estado' : 'No puedes cambiar el estado desde aquí'"
+          >
+            {{ statusName }} ▿
+          </span>
+
+          <div
+            v-if="showStatusDropdown && availableStatusObjects.length > 0"
+            class="status-dropdown"
+            @click.stop
+          >
+            <div class="dropdown-header">
+              <small class="text-muted">Change Status :</small>
+            </div>
+            <div class="dropdown-body">
+              <button
+                v-for="statusObj in availableStatusObjects"
+                :key="statusObj.id"
+                class="dropdown-item"
+                @click="handleStatusChange(statusObj.id)"
+              >
+                <span class="status-dot" :class="getStatusColor(statusObj.name)"></span>
+                {{ statusObj.name }}
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <p class="card-text text-secondary text-truncate-2">
@@ -86,10 +208,36 @@ function handleEdit() {
   </div>
 </template>
 
+<script>
+export default {
+  methods: {
+    getStatusColor(statusName) {
+      switch (statusName) {
+        case "VALID":
+          return "status-success";
+        case "IN PROGRESS":
+          return "status-warning";
+        case "TO DO":
+          return "status-secondary";
+        case "CANCELLED":
+          return "status-danger";
+        case "DONE":
+          return "status-primary";
+        case "PENDING":
+          return "status-info";
+        default:
+          return "status-light";
+      }
+    },
+  },
+};
+</script>
+
 <style scoped>
 .task-card {
   transition: transform 0.2s, box-shadow 0.2s;
   border-left: 4px solid transparent !important;
+  overflow: visible !important;
 }
 
 .task-card:hover {
@@ -115,5 +263,101 @@ function handleEdit() {
   justify-content: center;
   font-size: 0.75rem;
   font-weight: bold;
+}
+
+.position-relative {
+  position: relative;
+  overflow: visible !important;
+}
+
+.status-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 0.375rem;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+  min-width: 200px;
+  margin-top: 0.5rem;
+}
+
+.dropdown-active {
+  position: relative;
+  z-index: 1000;
+}
+
+.dropdown-header {
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid #dee2e6;
+  background-color: #f8f9fa;
+  border-radius: 0.375rem 0.375rem 0 0;
+}
+
+.dropdown-body {
+  padding: 0.5rem 0;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  color: #212529;
+  font-size: 0.9rem;
+}
+
+.dropdown-item:hover {
+  background-color: #f8f9fa;
+}
+
+.dropdown-item:last-child {
+  border-radius: 0 0 0.375rem 0.375rem;
+}
+
+.status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 0.5rem;
+}
+
+.status-success {
+  background-color: #198754;
+}
+
+.status-warning {
+  background-color: #ffc107;
+}
+
+.status-danger {
+  background-color: #dc3545;
+}
+
+.status-primary {
+  background-color: #0d6efd;
+}
+
+.status-secondary {
+  background-color: #6c757d;
+}
+
+.status-info {
+  background-color: #0dcaf0;
+}
+
+.status-light {
+  background-color: #f8f9fa;
+}
+
+.cursor-pointer {
+  cursor: pointer;
 }
 </style>

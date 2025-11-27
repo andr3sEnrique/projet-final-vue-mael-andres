@@ -12,7 +12,7 @@ const finalProjects = computed(() => {
   }
 
   return projects.filter((project) => {
-    return store.tasks.some((task) => task.projectId === project.id && task.assignedTo === store.user.id);
+    return store.tasks.some((task) => task.projectId === project.id && task.assignedTo === store.user?.id);
   });
 });
 </script>

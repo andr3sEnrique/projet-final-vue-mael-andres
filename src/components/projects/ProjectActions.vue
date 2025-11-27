@@ -15,6 +15,10 @@ const props = defineProps({
     type: Boolean,
     required: true
   },
+  isManagerInProject: {
+    type: Boolean,
+    required: true
+  },
   viewMode: {
     type: String,
     required: true
@@ -68,7 +72,7 @@ const setViewMode = (mode) => {
       </button>
     </div>
 
-    <div v-if="hasManagerRole" class="d-flex gap-2">
+    <div v-if="(hasManagerRole || hasBothRoles) && isManagerInProject" class="d-flex gap-2">
       <button 
         @click="router.push(`/projects/${project.id}/update`)" 
         class="btn btn-outline-primary"

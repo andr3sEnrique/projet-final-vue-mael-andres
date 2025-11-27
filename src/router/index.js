@@ -35,6 +35,9 @@ router.beforeEach((to, from, next) => {
   if (isAuth && !user.roles.includes('manager') && to.name === 'add-project') {
     return next({ name: 'home' });
   }
+  if (isAuth && !user.roles.includes('manager') && to.name === 'update-project') {
+    return next({ name: 'home' });
+  }
   next();
 });
 
