@@ -8,7 +8,7 @@ const props = defineProps({
     type: Array,
     required: true
   },
-  canAddTasks: {
+  canManageTasks: {
     type: Boolean,
     required: true
   }
@@ -31,7 +31,7 @@ const displayTasks = () => {
   <div class="text-start">
     <TaskFiltersBar 
       :tasks="props.tasks"
-      :canAddTasks="canAddTasks"
+      :canManageTasks="canManageTasks"
       @add-task="emit('add-task')"
       @filtered-tasks="handleFilteredTasks"
     />
@@ -47,7 +47,7 @@ const displayTasks = () => {
 
       <div class="row row-cols-1 row-cols-md-2 g-3">
         <div class="col" v-for="task in displayTasks()" :key="task?.id">
-          <TaskView v-if="task" :task="task" view-mode="manager" @view-task="emit('view-task', $event)" :canEdit="true" @edit-task="$emit('edit-task', $event)" @status-changed="emit('status-changed', $event)" />
+          <TaskView v-if="task" :task="task" view-mode="manager" @view-task="emit('view-task', $event)" :canManageTasks=canManageTasks @edit-task="$emit('edit-task', $event)" @status-changed="emit('status-changed', $event)" />
         </div>
       </div>
     </div>
@@ -56,7 +56,7 @@ const displayTasks = () => {
       <i class="bi bi-inbox text-secondary" style="font-size: 4rem;"></i>
       <h5 class="text-secondary mt-3">No tasks yet</h5>
       <p class="text-muted mb-4">Get started by creating your first task for this project</p>
-      <button v-if="canAddTasks" class="btn btn-primary" @click="emit('add-task')" aria-label="Create first task">
+      <button v-if="canManageTasks" class="btn btn-primary" @click="emit('add-task')" aria-label="Create first task">
         <i class="bi bi-plus-lg me-1"></i> Create First Task
       </button>
     </div>

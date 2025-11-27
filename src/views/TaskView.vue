@@ -1,8 +1,7 @@
 <script setup>
 import { computed, ref, onMounted, onUnmounted } from "vue";
 import { useDataStore } from "@/stores/dataStore";
-import { statusEnum } from "@/data/statusEnum.js";
-import { getStatusName } from "@/utils/getStatusName";
+import {getStatusColor, statusUtils} from "@/utils/statusUtils.js";
 import { getAvailableStatusTransitions } from "@/utils/statusTransitions";
 import Swal from "sweetalert2";
 
@@ -11,9 +10,9 @@ const props = defineProps({
     type: Object,
     required: true,
   },
-  canEdit: {
+  canManageTasks: {
     type: Boolean,
-    default: false,
+    required: true
   },
   viewMode: {
     type: String,
@@ -22,7 +21,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["view-task", "status-changed", "edit-task"]);
+const emit = defineEmits(["view-task", "status-changed", "edit-task", "delete-task"]);
 
 const store = useDataStore();
 const showStatusDropdown = ref(false);
@@ -31,24 +30,9 @@ const assignedUser = computed(() => {
   return store.users?.find((u) => u.id === props.task.assignedTo);
 });
 
-const statusName = computed(() => getStatusName(store.status, props.task));
+const statusName = computed(() => statusUtils(store.status, props.task));
 
-const statusBadgeClass = computed(() => {
-  switch (statusName.value) {
-    case statusEnum.VALID:
-      return "bg-success";
-    case statusEnum.IN_PROGRESS:
-      return "bg-warning text-dark";
-    case statusEnum.TO_DO:
-      return "bg-secondary";
-    case statusEnum.CANCELLED:
-      return "bg-danger";
-    case statusEnum.DONE:
-      return "bg-primary";
-    default:
-      return "bg-light text-dark border";
-  }
-});
+const statusBadgeClass = computed(() => getStatusColor(statusName.value));
 
 const userRole = computed(() => {
   return props.viewMode;
@@ -124,6 +108,38 @@ function handleEdit() {
   emit("edit-task", props.task);
 }
 
+async function handleDelete() {
+  const { isConfirmed } = await Swal.fire({
+    title: 'Are you sure you want to delete this task?',
+    text: 'You won\'t be able to revert this!',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes',
+    cancelButtonText: 'Cancel'
+  });
+
+  if (isConfirmed) {
+    try {
+      store.deleteTask(props.task.id);
+      emit("delete-task", props.task.id);
+
+      Swal.fire({
+        title: "Success!",
+        text: "Task deleted successfully",
+        icon: "success",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    } catch (error) {
+      Swal.fire({
+        title: "Error!",
+        text: "Failed to delete task",
+        icon: "error",
+      });
+    }
+  }
+}
+
 function handleClickOutside(event) {
   const dropdown = event.target.closest(".status-dropdown");
   const badge = event.target.closest(".badge");
@@ -182,7 +198,8 @@ onUnmounted(() => {
         </div>
         <div class="d-flex gap-2">
           <button class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 0.8rem" @click="handleClick">More</button>
-          <button v-if="canEdit" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size: 0.8rem" @click="handleEdit"><i class="bi bi-pencil"></i> Update</button>
+          <button v-if="canManageTasks" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size: 0.8rem" @click="handleEdit"><i class="bi bi-pencil"></i> Update</button>
+          <button v-if="canManageTasks" class="btn btn-sm btn-outline-danger" style="font-size: 0.8rem" @click="handleDelete">🗑️</button>
         </div>
       </div>
     </div>
@@ -308,37 +325,5 @@ export default {
   height: 8px;
   border-radius: 50%;
   margin-right: 0.5rem;
-}
-
-.status-success {
-  background-color: #198754;
-}
-
-.status-warning {
-  background-color: #ffc107;
-}
-
-.status-danger {
-  background-color: #dc3545;
-}
-
-.status-primary {
-  background-color: #0d6efd;
-}
-
-.status-secondary {
-  background-color: #6c757d;
-}
-
-.status-info {
-  background-color: #0dcaf0;
-}
-
-.status-light {
-  background-color: #f8f9fa;
-}
-
-.cursor-pointer {
-  cursor: pointer;
 }
 </style>

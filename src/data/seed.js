@@ -7,14 +7,14 @@ export const seedData = {
     { id: "3", name: "Sophie Dual", email: "dual@test.com", password: "123", roles: ["manager", "developer"] },
   ],
   projects: [
-    { id: "1", title: "Web Corporativa", description: "Redesign completo", managerIds: ["1", "3"], tasks: ["101", "102"], startDate: new Date(), endDate: new Date(), status: "2" },
-    { id: "2", title: "App Interna", description: "Gestión de inventario", managerIds: ["3"], tasks: ["103", "104"], startDate: new Date(), endDate: new Date(), status: "3"  },
+    { id: "1", title: "Corporative Website", description: "Complete redesign", managerIds: ["1", "3"], tasks: ["101", "102"], startDate: new Date(), endDate: new Date(), status: "2" },
+    { id: "2", title: "Internal System", description: "Inventory", managerIds: ["3"], tasks: ["103", "104"], startDate: new Date(), endDate: new Date(), status: "3"  },
   ],
   tasks: [
-    { id: "101", projectId: "1", title: "Setup Vue", description: "Instalar Vite y Pinia", status: "5", assignedTo: "1", comments: [] },
-    { id: "102", projectId: "1", title: "Diseñar Login", description: "Crear formulario", status: "2", assignedTo: "1", comments: [] },
-    { id: "103", projectId: "2", title: "Diseñar Login", description: "Crear formulario", status: "2", assignedTo: "2", comments: [] },
-    { id: "104", projectId: "2", title: "Diseñar Login 2", description: "Crear formulario 2", status: "5", assignedTo: "", comments: [] },
+    { id: "101", projectId: "1", title: "Setup Vue", description: "Install Vite and Pinia", status: "5", assignedTo: "1", comments: [] },
+    { id: "102", projectId: "1", title: "Design Login", description: "Create form", status: "2", assignedTo: "1", comments: [] },
+    { id: "103", projectId: "2", title: "Design Login", description: "Create form", status: "2", assignedTo: "2", comments: [] },
+    { id: "104", projectId: "2", title: "Design Login 2", description: "Create form 2", status: "5", assignedTo: "", comments: [] },
   ],
   status: [
     { id: "1", name: statusEnum.VALID },

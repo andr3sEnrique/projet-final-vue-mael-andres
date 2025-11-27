@@ -1,7 +1,8 @@
 <script setup>
-import { ref } from "vue";
-import Swal from "sweetalert2";
-import { useDataStore } from "@/stores/dataStore";
+import {computed, ref} from 'vue';
+import Swal from 'sweetalert2';
+import { useDataStore } from '@/stores/dataStore';
+import {getStatusColor, statusUtils} from "@/utils/statusUtils.js";
 
 const props = defineProps({
   task: {
@@ -82,6 +83,10 @@ async function postComment() {
   }
 }
 
+const statusName = computed(() => statusUtils(store.status, props.task));
+
+const statusBadgeClass = computed(() => getStatusColor(statusName.value));
+
 function closeModal() {
   newCommentText.value = "";
   emit("close");
@@ -104,7 +109,7 @@ function closeModal() {
               <p>{{ task?.description || "No description" }}</p>
 
               <div class="mt-4">
-                <span class="badge bg-secondary me-2">{{ task?.status }}</span>
+                <span  class="badge rounded-pill me-2" :class="statusBadgeClass">{{statusName }}</span>
                 <small class="text-muted">ID: {{ task?.id }}</small>
               </div>
             </div>

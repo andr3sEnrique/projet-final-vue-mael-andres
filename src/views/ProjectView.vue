@@ -3,7 +3,7 @@ import { computed, onBeforeMount, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useDataStore } from "@/stores/dataStore";
 import { statusEnum } from "@/data/statusEnum.js";
-import { getStatusName } from "@/utils/getStatusName";
+import { statusUtils } from "@/utils/statusUtils.js";
 import Swal from "sweetalert2";
 import ProjectActions from "@/components/projects/ProjectActions.vue";
 import TaskFormModal from "@/components/tasks/TaskFormModal.vue";
@@ -96,17 +96,7 @@ const tasks = computed(() => {
   return store.tasks.filter((task) => task?.projectId === projectId);
 });
 
-const myAssignedTasks = computed(() => {
-  if (!store.user?.id) return [];
-  return tasks.value.filter((task) => task?.assignedTo === store.user.id);
-});
-
-const otherTasks = computed(() => {
-  if (!store.user?.id) return tasks.value;
-  return tasks.value.filter((task) => task?.assignedTo !== store.user.id);
-});
-
-const canAddTasks = computed(() => {
+const canManageTasks = computed(() => {
   if (!project.value || !store.user?.id) return false;
 
   if (hasManagerRole.value) {
@@ -116,12 +106,6 @@ const canAddTasks = computed(() => {
   return true;
 });
 
-const isManagerInProject = computed(() => {
-  if (!project.value || !store.user?.id) return false;
-  return project.value?.managerIds?.includes(store.user.id) || false;
-});
-
-
 const progessPercentage = computed(() => {
   if (!tasks.value || !Array.isArray(tasks.value) || tasks.value.length === 0) return 0;
   if (!store.status || !Array.isArray(store.status)) return 0;
@@ -129,7 +113,7 @@ const progessPercentage = computed(() => {
   let completedTasks = 0;
   for (const task of tasks.value) {
     if (!task) continue;
-    const st = getStatusName(store.status, task);
+    const st = statusUtils(store.status, task);
     if (st !== null && st === statusEnum.DONE) {
       completedTasks++;
     }
@@ -283,7 +267,7 @@ function handleTaskSaved() {
               :project="project"
               :hasBothRoles="hasBothRoles"
               :hasManagerRole="hasManagerRole"
-              :isManagerInProject="isManagerInProject"
+              :isManagerInProject="canManageTasks"
               :viewMode="viewMode"
               :isDeleting="isDeleting"
               @delete="handleDelete"
@@ -365,19 +349,16 @@ function handleTaskSaved() {
                 v-if="viewMode === 'developer'"
                 :tasks="tasks"
                 :userId="store.user?.id"
-                :canAddTasks="canAddTasks"
                 @view-task="openTaskDetails"
                 @add-task="openCreateModal"
-                @status-changed="handleStatusChanged"
               />
 
               <ManagerTasksView 
                 v-else-if="viewMode === 'manager'"
                 :tasks="tasks"
-                :canAddTasks="canAddTasks"
+                :canManageTasks="canManageTasks"
                 @view-task="openTaskDetails"
                 @add-task="openCreateModal" @edit-task="openEditModal"
-                @status-changed="handleStatusChanged"
               />
             </div>
           </div>

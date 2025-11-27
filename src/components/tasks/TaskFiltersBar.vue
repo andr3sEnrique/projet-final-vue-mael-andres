@@ -7,7 +7,7 @@ const props = defineProps({
     type: Array,
     required: true
   },
-  canAddTasks: {
+  canManageTasks: {
     type: Boolean,
     required: true
   }
@@ -99,10 +99,9 @@ const handleAddTask = () => {
         </select>
       </div>
 
-      <!-- Botón New Task -->
       <div class="col-12 col-md-2 d-flex justify-content-end">
         <button 
-          v-if="canAddTasks" 
+          v-if="canManageTasks"
           class="btn btn-primary w-100"
           @click="handleAddTask"
           aria-label="Create new task"
