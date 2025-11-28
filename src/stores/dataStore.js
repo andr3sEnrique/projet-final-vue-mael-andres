@@ -150,7 +150,7 @@ export const useDataStore = defineStore('data', {
             return {
               date,
               content,
-              author: author ? author.name : 'Auteur inconnu',
+              author: author ? author.name : 'Unknowed author',
             };
           });
 
@@ -159,7 +159,7 @@ export const useDataStore = defineStore('data', {
             description,
             status: statusObj ? statusObj.name : status,
             comments: commentsFormatted || [],
-            userAssigned: user ? user.name : 'Non assigné',
+            userAssigned: user ? user.name : 'Unassigned',
           };
         });
 
