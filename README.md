@@ -197,11 +197,7 @@ projet-final-vue-mael-andres/
 └── README.md                   # Documentation du projet
 ```
 
-## Contributeurs
+## Contributeurs 👥
 
 - **Maël** - Développeur Frontend
 - **Andrés** - Développeur Frontend
-
----
-
-*Développé avec ❤️ en utilisant Vue.js 3 et les technologies web modernes*
