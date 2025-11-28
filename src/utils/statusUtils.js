@@ -21,3 +21,5 @@ export const getStatusColor = (status) => {
             return "bg-light text-dark border";
     }
 }
+
+export const isInvalidProjectStatus = (status) => [statusEnum.CANCELLED, statusEnum.DONE].includes(status);

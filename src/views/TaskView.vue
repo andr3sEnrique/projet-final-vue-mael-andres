@@ -5,6 +5,7 @@ import {getStatusColor, statusUtils} from "@/utils/statusUtils.js";
 import { getAvailableStatusTransitions } from "@/utils/statusTransitions";
 import { statusEnum } from "@/data/statusEnum.js";
 import Swal from "sweetalert2";
+import { isInvalidProjectStatus } from "@/utils/statusUtils.js";
 
 const props = defineProps({
   task: {
@@ -62,11 +63,7 @@ const canChangeStatus = computed(() => {
 });
 
 const canClickStatus = computed(() => {
-  return !isProjectCancelled.value && canChangeStatus.value;
-});
-
-const isProjectCancelled = computed(() => {
-  return props.projectStatus === statusEnum.CANCELLED;
+  return !isInvalidProjectStatus(props.projectStatus) && canChangeStatus.value;
 });
 
 function handleStatusClick() {
@@ -213,7 +210,7 @@ onUnmounted(() => {
             {{ assignedUser ? assignedUser.name : "Non assigné" }}
           </small>
         </div>
-        <div class="d-flex gap-2" v-if="!isProjectCancelled">
+        <div class="d-flex gap-2" v-if="!isInvalidProjectStatus(projectStatus)">
           <button class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 0.8rem" @click="handleClick">More</button>
           <button v-if="canManageTasks" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size: 0.8rem" @click="handleEdit"><i class="bi bi-pencil"></i> Update</button>
           <button v-if="canManageTasks" class="btn btn-sm btn-outline-danger" style="font-size: 0.8rem" @click="handleDelete">🗑️</button>
