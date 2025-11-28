@@ -62,11 +62,15 @@ const canChangeStatus = computed(() => {
 });
 
 const canClickStatus = computed(() => {
-  return props.projectStatus !== statusEnum.CANCELLED && canChangeStatus.value;
+  return !isProjectCancelled.value && canChangeStatus.value;
+});
+
+const isProjectCancelled = computed(() => {
+  return props.projectStatus === statusEnum.CANCELLED;
 });
 
 function handleStatusClick() {
-  if (props.projectStatus === statusEnum.CANCELLED) {
+  if (isProjectCancelled.value) {
     return;
   }
   
@@ -209,7 +213,7 @@ onUnmounted(() => {
             {{ assignedUser ? assignedUser.name : "Non assigné" }}
           </small>
         </div>
-        <div class="d-flex gap-2">
+        <div class="d-flex gap-2" v-if="!isProjectCancelled">
           <button class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 0.8rem" @click="handleClick">More</button>
           <button v-if="canManageTasks" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size: 0.8rem" @click="handleEdit"><i class="bi bi-pencil"></i> Update</button>
           <button v-if="canManageTasks" class="btn btn-sm btn-outline-danger" style="font-size: 0.8rem" @click="handleDelete">🗑️</button>
