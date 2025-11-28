@@ -176,7 +176,7 @@ onUnmounted(() => {
   <div class="card mb-3 task-card border-0 shadow-sm" :class="{ 'dropdown-active': showStatusDropdown }">
     <div class="card-body">
       <div class="d-flex justify-content-between align-items-start mb-2">
-        <h5 class="card-title mb-0 fw-bold text-dark">{{ task.title }}</h5>
+        <h5 class="card-title mb-0 fw-bold text-dark fs-6 fs-sm-5">{{ task.title }}</h5>
 
         <div class="position-relative">
           <span class="badge rounded-pill" :class="[statusBadgeClass, canClickStatus ? 'cursor-pointer' : '']" @click="handleStatusClick" :style="{ cursor: canClickStatus ? 'pointer' : 'default' }" :title="canClickStatus ? 'Click to change the status' : (props.projectStatus === statusEnum.CANCELLED ? 'Cannot change status - project is cancelled' : 'You cannot change the status from here')"> {{ statusName }} {{ canClickStatus ? "▼" : "" }} </span>
@@ -195,7 +195,7 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <p class="card-text text-secondary text-truncate-2">
+      <p class="card-text text-secondary text-truncate-2 fs-7 fs-sm-6">
         {{ task.description }}
       </p>
 
@@ -206,14 +206,23 @@ onUnmounted(() => {
           <div class="avatar-circle me-2">
             {{ assignedUser ? assignedUser.name[0] : "?" }}
           </div>
-          <small class="text-muted">
+          <small class="text-muted fs-7 fs-sm-6">
             {{ assignedUser ? assignedUser.name : "Non assigné" }}
           </small>
         </div>
-        <div class="d-flex gap-2" v-if="!isInvalidProjectStatus(projectStatus)">
-          <button class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 0.8rem" @click="handleClick">More</button>
-          <button v-if="canManageTasks" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size: 0.8rem" @click="handleEdit"><i class="bi bi-pencil"></i> Update</button>
-          <button v-if="canManageTasks" class="btn btn-sm btn-outline-danger" style="font-size: 0.8rem" @click="handleDelete">🗑️</button>
+        <div class="d-flex gap-1 gap-sm-2" v-if="!isInvalidProjectStatus(projectStatus)">
+          <button class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 0.8rem" @click="handleClick">
+            <span class="d-inline d-sm-none">👁️</span>
+            <span class="d-none d-sm-inline">👁️ More</span>
+          </button>
+          <button v-if="canManageTasks" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size: 0.8rem" @click="handleEdit">
+            <span class="d-inline d-sm-none">✏️</span>
+            <span class="d-none d-sm-inline">✏️ Update</span>
+          </button>
+          <button v-if="canManageTasks" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size: 0.8rem" @click="handleDelete">
+            <span class="d-inline d-sm-none">🗑️</span>
+            <span class="d-none d-sm-inline">🗑️ Delete</span>
+          </button>
         </div>
       </div>
     </div>
@@ -246,6 +255,19 @@ export default {
 </script>
 
 <style scoped>
+.fs-7 {
+  font-size: 0.75rem !important;
+}
+
+@media (min-width: 576px) {
+  .fs-sm-6 {
+    font-size: 1rem !important;
+  }
+  .fs-sm-5 {
+    font-size: 1.25rem !important;
+  }
+}
+
 .task-card {
   transition: transform 0.2s, box-shadow 0.2s;
   border-left: 4px solid transparent !important;

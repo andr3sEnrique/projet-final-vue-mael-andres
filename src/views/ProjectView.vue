@@ -98,7 +98,7 @@ const tasks = computed(() => {
 const canManageTasks = computed(() => {
   if (!project.value || !store.user?.id) return false;
 
-  if (hasManagerRole.value) {
+  if (hasManagerRole.value || hasBothRoles.value) {
     return project.value?.managerIds?.includes(store.user.id) || false;
   }
 

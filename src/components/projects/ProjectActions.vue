@@ -29,6 +29,8 @@ const props = defineProps({
   }
 });
 
+console.log('props', props);
+
 const emit = defineEmits(['delete', 'update-view-mode']);
 
 const router = useRouter();
@@ -54,48 +56,58 @@ const setViewMode = (mode) => {
 </script>
 
 <template>
-  <div class="d-flex gap-2">
-    <div v-if="hasBothRoles" class="d-flex gap-2 me-3">
+  <div class="d-flex flex-wrap gap-2 gap-md-3">
+    <div v-if="hasBothRoles" class="d-flex gap-1 gap-sm-2">
       <button 
         @click="setViewMode('developer')" 
-        :class="['btn', viewMode === 'developer' ? 'btn-primary' : 'btn-outline-primary']"
+        :class="['btn btn-sm', viewMode === 'developer' ? 'btn-primary' : 'btn-outline-primary']"
         aria-label="Switch to developer view"
       >
-        👨‍💻 Developer View
+        <span class="d-inline d-sm-none">👨‍💻</span>
+        <span class="d-none d-sm-inline">👨‍💻 Developer</span>
+        <span class="d-none d-lg-inline"> View</span>
       </button>
       <button 
         @click="setViewMode('manager')" 
-        :class="['btn', viewMode === 'manager' ? 'btn-primary' : 'btn-outline-primary']"
+        :class="['btn btn-sm', viewMode === 'manager' ? 'btn-primary' : 'btn-outline-primary']"
         aria-label="Switch to manager view"
       >
-        📊 Manager View
+        <span class="d-inline d-sm-none">📊</span>
+        <span class="d-none d-sm-inline">📊 Manager</span>
+        <span class="d-none d-lg-inline"> View</span>
       </button>
     </div>
 
-    <div v-if="(hasManagerRole || hasBothRoles) && isManagerInProject" class="d-flex gap-2">
-      <button 
-        @click="router.push(`/projects/${project.id}/update`)" 
-        class="btn btn-outline-primary"
-        aria-label="Edit project"
-        :disabled="isDeleting"
-      >
-        ✏️
-      </button>
-      <button 
-        @click="handleDelete" 
-        class="btn btn-outline-danger"
-        aria-label="Delete project"
-        :disabled="isDeleting"
-      >
-        🗑️
-      </button>
+    <div class="d-flex flex-wrap gap-1 gap-sm-2 align-items-start">
+      <div v-if="(hasManagerRole || hasBothRoles) && isManagerInProject" class="d-flex gap-1 gap-sm-2">
+        <button 
+          @click="router.push(`/projects/${project.id}/update`)" 
+          class="btn btn-sm btn-outline-primary"
+          aria-label="Edit project"
+          :disabled="isDeleting"
+        >
+          <span class="d-inline d-sm-none">✏️</span>
+          <span class="d-none d-sm-inline">✏️ Edit</span>
+        </button>
+        <button 
+          @click="handleDelete" 
+          class="btn btn-sm btn-outline-danger"
+          aria-label="Delete project"
+          :disabled="isDeleting"
+        >
+          <span class="d-inline d-sm-none">🗑️</span>
+          <span class="d-none d-sm-inline">🗑️ Delete</span>
+        </button>
+      </div>
+      
       <button 
         @click="router.push('/')" 
-        class="btn btn-outline-secondary"
+        class="btn btn-sm btn-outline-secondary"
         aria-label="Go to home page"
         :disabled="isDeleting"
       >
-        Go Home
+        <span class="d-inline d-sm-none">🏠</span>
+        <span class="d-none d-sm-inline">🏠 Home</span>
       </button>
     </div>
   </div>
