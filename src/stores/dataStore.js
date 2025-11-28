@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { seedData } from "../data/seed";
+import { hashPassword, verifyPassword } from "@/utils/auth";
 
 export const useDataStore = defineStore("data", {
   state: () => ({
@@ -24,10 +25,11 @@ export const useDataStore = defineStore("data", {
       localStorage.setItem("users", JSON.stringify(this.users));
     },
     login(email, password) {
-      const user = this.users.find((u) => u.email === email && u.password === password);
+      const user = this.users.find((u) => u.email === email);
       if (user) {
+        if (!verifyPassword(password, user.password)) return false;
         this.user = user;
-        localStorage.setItem("user", JSON.stringify(user));
+        this.syncToLocalStorage();
         return true;
       }
       return false;
@@ -63,13 +65,11 @@ export const useDataStore = defineStore("data", {
         id: crypto.randomUUID(),
         name,
         email,
-        password,
+        password: hashPassword(password),
         roles,
       };
 
       this.users.push(newUser);
-      this.users.push(newUser);
-      this.user = newUser;
       if (newUser.roles.includes("manager")) {
         this.managers.push(newUser);
       }

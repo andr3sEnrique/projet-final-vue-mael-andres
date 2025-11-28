@@ -2,9 +2,9 @@ import { statusEnum } from "./statusEnum.js";
 
 export const seedData = {
   users: [
-    { id: "1", name: "Laura Manager", email: "manager@test.com", password: "123", roles: ["manager"] },
-    { id: "2", name: "David Dev", email: "dev@test.com", password: "123", roles: ["developer"] },
-    { id: "3", name: "Sophie Dual", email: "dual@test.com", password: "123", roles: ["manager", "developer"] },
+    { id: "1", name: "Laura Manager", email: "manager@test.com", password: "$2b$10$UdWR8Jf3mHEXbt9fjyFTZutq3yiRPhpniHST1nzKPtbq3CTf6nSAy", roles: ["manager"] },
+    { id: "2", name: "David Dev", email: "dev@test.com", password: "$2b$10$UdWR8Jf3mHEXbt9fjyFTZutq3yiRPhpniHST1nzKPtbq3CTf6nSAy", roles: ["developer"] },
+    { id: "3", name: "Sophie Dual", email: "dual@test.com", password: "$2b$10$UdWR8Jf3mHEXbt9fjyFTZutq3yiRPhpniHST1nzKPtbq3CTf6nSAy", roles: ["manager", "developer"] },
   ],
   projects: [
     { id: "1", title: "Corporative Website", description: "Complete redesign", managerIds: ["1", "3"], tasks: ["101", "102"], startDate: new Date(), endDate: new Date(), status: "2" },

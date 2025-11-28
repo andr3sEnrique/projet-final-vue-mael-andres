@@ -24,7 +24,7 @@ const finalProjects = computed(() => {
       <p class="text-muted">Select a project to see its tasks.</p>
     </div>
     <div>
-      <router-link v-if="hasManagerRole" :to="{ name: 'add-project' }" class="btn btn-primary"> Create a new project </router-link>
+      <router-link v-if="hasManagerRole" :to="{ name: 'add-project' }" class="btn btn-primary mb-3"> Create a new project </router-link>
     </div>
 
     <div v-if="finalProjects.length === 0" class="alert alert-info" role="alert">There are no projects available at this time.</div>

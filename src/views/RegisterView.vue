@@ -36,7 +36,7 @@ const handleRegister = () => {
   const success = authStore.register(name.value, email.value, password.value, userRoles.value);
 
   if (success) {
-    router.push({ name: "home" });
+    router.push({ name: "login" });
   } else {
     errorMsg.value = "Email already used";
   }
@@ -66,7 +66,7 @@ watch(confirmPassword, () => {
       <form @submit.prevent="handleRegister">
         <div class="form-group">
           <label for="name">Name surname</label>
-          <input type="name" id="name" v-model="name" required placeholder="Laura Manager" />
+          <input type="text" id="name" v-model="name" required placeholder="Laura Manager" />
         </div>
 
         <div class="form-group">

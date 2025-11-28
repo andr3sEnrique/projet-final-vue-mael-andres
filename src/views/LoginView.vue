@@ -85,13 +85,13 @@ input {
   padding: 0.75rem;
   border: 1px solid #ddd;
   border-radius: 4px;
-  box-sizing: border-box; /* Important pour le padding */
+  box-sizing: border-box;
 }
 
 .btn-login {
   width: 100%;
   padding: 0.75rem;
-  background-color: #42b883; /* Couleur Vue.js */
+  background-color: #42b883;
   color: white;
   border: none;
   border-radius: 4px;
