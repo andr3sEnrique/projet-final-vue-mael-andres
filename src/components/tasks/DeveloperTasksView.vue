@@ -11,6 +11,10 @@ const props = defineProps({
   userId: {
     type: String,
     default: null
+  },
+  projectStatus: {
+    type: String,
+    required: true
   }
 });
 
@@ -39,6 +43,7 @@ const handleFilteredTasks = (tasks) => {
   <div class="text-start">
     <TaskFiltersBar 
       :tasks="props.tasks"
+      :projectStatus="props.projectStatus"
       :can-manage-tasks="true"
       @add-task="emit('add-task')"
       @filtered-tasks="handleFilteredTasks"
@@ -54,7 +59,7 @@ const handleFilteredTasks = (tasks) => {
       </div>
       <div class="row row-cols-1 row-cols-md-2 g-3">
         <div class="col" v-for="task in myAssignedTasks" :key="task?.id">
-          <TaskView v-if="task" :task="task" view-mode="developer" :canManageTasks="false" @view-task="emit('view-task', $event)" @status-changed="emit('status-changed', $event)" />
+          <TaskView v-if="task" :task="task" :projectStatus="props.projectStatus" view-mode="developer" :canManageTasks="false" @view-task="emit('view-task', $event)" @status-changed="emit('status-changed', $event)" />
         </div>
       </div>
   
@@ -70,7 +75,7 @@ const handleFilteredTasks = (tasks) => {
       </div>
       <div class="row row-cols-1 row-cols-md-2 g-3">
         <div class="col" v-for="task in otherTasks" :key="task?.id">
-          <TaskView v-if="task" :task="task" :canManageTasks="false" view-mode="developer" @view-task="emit('view-task', $event)" @status-changed="emit('status-changed', $event)" />
+          <TaskView v-if="task" :task="task" :canManageTasks="false" :projectStatus="props.projectStatus" view-mode="developer" @view-task="emit('view-task', $event)" @status-changed="emit('status-changed', $event)" />
         </div>
       </div>
     </div>

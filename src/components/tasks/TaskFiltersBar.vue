@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { useDataStore } from '@/stores/dataStore';
+import { statusEnum } from '@/data/statusEnum';
 
 const props = defineProps({
   tasks: {
@@ -9,6 +10,10 @@ const props = defineProps({
   },
   canManageTasks: {
     type: Boolean,
+    required: true
+  },
+  projectStatus: {
+    type: String,
     required: true
   }
 });
@@ -101,7 +106,7 @@ const handleAddTask = () => {
 
       <div class="col-12 col-md-2 d-flex justify-content-end">
         <button 
-          v-if="canManageTasks"
+          v-if="canManageTasks && projectStatus !== statusEnum.CANCELLED"
           class="btn btn-primary w-100"
           @click="handleAddTask"
           aria-label="Create new task"

@@ -3,6 +3,7 @@ import { computed, ref, onMounted, onUnmounted } from "vue";
 import { useDataStore } from "@/stores/dataStore";
 import {getStatusColor, statusUtils} from "@/utils/statusUtils.js";
 import { getAvailableStatusTransitions } from "@/utils/statusTransitions";
+import { statusEnum } from "@/data/statusEnum.js";
 import Swal from "sweetalert2";
 
 const props = defineProps({
@@ -19,6 +20,10 @@ const props = defineProps({
     default: "developer",
     validator: (value) => ["developer", "manager"].includes(value),
   },
+  projectStatus: {
+    type: String,
+    required: true
+  }
 });
 
 const emit = defineEmits(["view-task", "status-changed", "edit-task", "delete-task"]);
@@ -56,7 +61,15 @@ const canChangeStatus = computed(() => {
   return availableStatusTransitions.value.length > 0;
 });
 
+const canClickStatus = computed(() => {
+  return props.projectStatus !== statusEnum.CANCELLED && canChangeStatus.value;
+});
+
 function handleStatusClick() {
+  if (props.projectStatus === statusEnum.CANCELLED) {
+    return;
+  }
+  
   if (!canChangeStatus.value) {
     Swal.fire({
       title: "Not Allowed!",
@@ -165,7 +178,7 @@ onUnmounted(() => {
         <h5 class="card-title mb-0 fw-bold text-dark">{{ task.title }}</h5>
 
         <div class="position-relative">
-          <span class="badge rounded-pill" :class="[statusBadgeClass, canChangeStatus ? 'cursor-pointer' : '']" @click="handleStatusClick" :style="{ cursor: canChangeStatus ? 'pointer' : 'default' }" :title="canChangeStatus ? 'Haz clic para cambiar el estado' : 'No puedes cambiar el estado desde aquí'"> {{ statusName }} ▿ </span>
+          <span class="badge rounded-pill" :class="[statusBadgeClass, canClickStatus ? 'cursor-pointer' : '']" @click="handleStatusClick" :style="{ cursor: canClickStatus ? 'pointer' : 'default' }" :title="canClickStatus ? 'Click to change the status' : (props.projectStatus === statusEnum.CANCELLED ? 'Cannot change status - project is cancelled' : 'You cannot change the status from here')"> {{ statusName }} {{ canClickStatus ? "▼" : "" }} </span>
 
           <div v-if="showStatusDropdown && availableStatusObjects.length > 0" class="status-dropdown" @click.stop>
             <div class="dropdown-header">

@@ -24,6 +24,7 @@ const availableStatus = computed(() => {
     return allStatus.filter(s => 
       s.name === statusEnum.IN_PROGRESS ||
       s.name === statusEnum.DONE ||
+      s.name === statusEnum.TO_DO ||
       s.name === statusEnum.CANCELLED
     );
   }

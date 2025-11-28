@@ -11,6 +11,10 @@ const props = defineProps({
   canManageTasks: {
     type: Boolean,
     required: true
+  },
+  projectStatus: {
+    type: String,
+    required: true
   }
 });
 
@@ -31,6 +35,7 @@ const displayTasks = () => {
   <div class="text-start">
     <TaskFiltersBar 
       :tasks="props.tasks"
+      :projectStatus="props.projectStatus"
       :canManageTasks="canManageTasks"
       @add-task="emit('add-task')"
       @filtered-tasks="handleFilteredTasks"
@@ -47,7 +52,7 @@ const displayTasks = () => {
 
       <div class="row row-cols-1 row-cols-md-2 g-3">
         <div class="col" v-for="task in displayTasks()" :key="task?.id">
-          <TaskView v-if="task" :task="task" view-mode="manager" @view-task="emit('view-task', $event)" :canManageTasks=canManageTasks @edit-task="$emit('edit-task', $event)" @status-changed="emit('status-changed', $event)" />
+          <TaskView v-if="task" :task="task" view-mode="manager" :projectStatus="props.projectStatus" @view-task="emit('view-task', $event)" :canManageTasks=canManageTasks @edit-task="$emit('edit-task', $event)" @status-changed="emit('status-changed', $event)" />
         </div>
       </div>
     </div>

@@ -13,7 +13,7 @@ const props = defineProps({
     type: String,
     required: true
   },
-  hasManagerRole: {
+  hasBothRoles: {
     type: Boolean,
     required: true
   },
@@ -63,7 +63,7 @@ watch(
 
 
 function getDefaultStatus() {
-  const statusName = props.hasManagerRole ? statusEnum.VALID : statusEnum.PENDING;
+  const statusName = props.hasBothRoles ? statusEnum.VALID : statusEnum.PENDING;
   return store.status?.find(s => s?.name === statusName)?.id;
 }
 
@@ -71,7 +71,7 @@ function resetTask() {
   newTask.value = {
     title: '',
     description: '',
-    assignedTo: props.hasManagerRole ? '' : (store.user?.id || ''),
+    assignedTo: props.hasBothRoles ? '' : (store.user?.id || ''),
     status: getDefaultStatus()
   };
 }
@@ -177,7 +177,7 @@ function closeModal() {
               ></textarea>
             </div>
 
-            <div v-if="hasManagerRole" class="mb-3">
+            <div v-if="hasBothRoles" class="mb-3">
               <label class="form-label fw-semibold" for="taskAssignee">Assign to</label>
               <select 
                 id="taskAssignee"

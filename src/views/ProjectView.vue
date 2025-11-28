@@ -348,6 +348,7 @@ function handleTaskSaved() {
               <DeveloperTasksView 
                 v-if="viewMode === 'developer'"
                 :tasks="tasks"
+                :projectStatus="projectStatus.label"
                 :userId="store.user?.id"
                 @view-task="openTaskDetails"
                 @add-task="openCreateModal"
@@ -356,6 +357,7 @@ function handleTaskSaved() {
               <ManagerTasksView 
                 v-else-if="viewMode === 'manager'"
                 :tasks="tasks"
+                :projectStatus="projectStatus.label"
                 :canManageTasks="canManageTasks"
                 @view-task="openTaskDetails"
                 @add-task="openCreateModal" @edit-task="openEditModal"
@@ -365,7 +367,7 @@ function handleTaskSaved() {
         </div>
       </div>
 
-      <TaskFormModal :isOpen="showModal" :projectId="projectId" :hasManagerRole="hasManagerRole" :hasDeveloperRole="hasDeveloperRole" :isCreating="isCreatingTask" :taskToEdit="taskToEdit" @close="showModal = false" @task-created="handleTaskCreated" @task-updated="handleTaskUpdated" />
+      <TaskFormModal :isOpen="showModal" :projectId="projectId" :hasBothRoles="hasBothRoles" :hasDeveloperRole="hasDeveloperRole" :isCreating="isCreatingTask" :taskToEdit="taskToEdit" @close="showModal = false" @task-created="handleTaskCreated" @task-updated="handleTaskUpdated" />
 
       <TaskDetailsModal :task="selectedTask" :isOpen="!!selectedTask" :isPostingComment="isPostingComment" @close="selectedTask = null" @comment-added="handleCommentAdded" />
     </div>
