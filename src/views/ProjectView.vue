@@ -85,6 +85,39 @@ const handleDelete = async () => {
   }
 };
 
+const handleExport = async () => {
+  try {
+    let exportedProject = store.getExportProject(projectId);
+
+    const blob = new Blob([JSON.stringify(exportedProject, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+
+    link.download = exportedProject.title + '_export.json';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    await Swal.fire({
+      title: 'Success!',
+      text: 'Porject Exported successfully',
+      icon: 'success',
+      timer: 2000,
+      showConfirmButton: false,
+    });
+  } catch (error) {
+    console.log(error);
+    Swal.fire({
+      title: 'Error!',
+      text: 'Failed to export',
+      icon: 'error',
+    });
+  }
+};
+
 const project = computed(() => {
   if (!store.projects || !Array.isArray(store.projects)) return null;
   return store.projects.find((p) => p?.id === projectId);
@@ -240,11 +273,6 @@ function openEditModal(task) {
   taskToEdit.value = task;
   showModal.value = true;
 }
-
-function handleTaskSaved() {
-  showModal.value = false;
-  taskToEdit.value = null;
-}
 </script>
 
 <template>
@@ -261,7 +289,7 @@ function handleTaskSaved() {
           <div class="d-flex align-items-center mb-3">
             <h1 class="display-6 mb-0 me-3">{{ project.title }}</h1>
 
-            <ProjectActions v-if="project" :project="project" :hasBothRoles="hasBothRoles" :hasManagerRole="hasManagerRole" :isManagerInProject="canManageTasks" :viewMode="viewMode" :isDeleting="isDeleting" @delete="handleDelete" @update-view-mode="handleViewModeChange" class="ms-auto" />
+            <ProjectActions v-if="project" :project="project" :hasBothRoles="hasBothRoles" :hasManagerRole="hasManagerRole" :isManagerInProject="canManageTasks" :viewMode="viewMode" :isDeleting="isDeleting" @delete="handleDelete" @export="handleExport" @update-view-mode="handleViewModeChange" class="ms-auto" />
           </div>
 
           <p class="text-muted mb-3">{{ project.description }}</p>

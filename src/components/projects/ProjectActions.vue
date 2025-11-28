@@ -31,7 +31,7 @@ const props = defineProps({
 
 console.log('props', props);
 
-const emit = defineEmits(['delete', 'update-view-mode']);
+const emit = defineEmits(['delete', 'update-view-mode', 'export']);
 
 const router = useRouter();
 
@@ -49,6 +49,10 @@ const handleDelete = async () => {
     emit('delete');
   }
 };
+
+const handleExport = async () => {
+  emit('export');
+}
 
 const setViewMode = (mode) => {
   emit('update-view-mode', mode);
@@ -97,6 +101,15 @@ const setViewMode = (mode) => {
         >
           <span class="d-inline d-sm-none">🗑️</span>
           <span class="d-none d-sm-inline">🗑️ Delete</span>
+        </button>
+        <button 
+          @click="handleExport" 
+          class="btn btn-sm btn-outline-danger"
+          aria-label="Delete project"
+          :disabled="isDeleting"
+        >
+          <span class="d-inline d-sm-none">📤</span>
+          <span class="d-none d-sm-inline">📤 Export</span>
         </button>
       </div>
       

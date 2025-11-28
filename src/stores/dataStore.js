@@ -1,16 +1,16 @@
-import { defineStore } from "pinia";
-import { seedData } from "../data/seed";
-import { hashPassword, verifyPassword } from "@/utils/auth";
+import { defineStore } from 'pinia';
+import { seedData } from '../data/seed';
+import { hashPassword, verifyPassword } from '@/utils/auth';
 
-export const useDataStore = defineStore("data", {
+export const useDataStore = defineStore('data', {
   state: () => ({
-    user: JSON.parse(localStorage.getItem("user")) || null,
-    managers: JSON.parse(localStorage.getItem("managers")) || seedData.users.filter((u) => u.roles.includes("manager")),
-    projects: JSON.parse(localStorage.getItem("projects")) || seedData.projects,
+    user: JSON.parse(localStorage.getItem('user')) || null,
+    managers: JSON.parse(localStorage.getItem('managers')) || seedData.users.filter((u) => u.roles.includes('manager')),
+    projects: JSON.parse(localStorage.getItem('projects')) || seedData.projects,
     status: seedData.status,
-    tasks: JSON.parse(localStorage.getItem("tasks")) || seedData.tasks,
-    currentUser: JSON.parse(localStorage.getItem("currentUser")) || null,
-    users: JSON.parse(localStorage.getItem("users")) || seedData.users,
+    tasks: JSON.parse(localStorage.getItem('tasks')) || seedData.tasks,
+    currentUser: JSON.parse(localStorage.getItem('currentUser')) || null,
+    users: JSON.parse(localStorage.getItem('users')) || seedData.users,
   }),
   getters: {
     isAuthenticated: (state) => !!state.user,
@@ -18,11 +18,11 @@ export const useDataStore = defineStore("data", {
   },
   actions: {
     syncToLocalStorage() {
-      localStorage.setItem("user", JSON.stringify(this.user));
-      localStorage.setItem("managers", JSON.stringify(this.managers));
-      localStorage.setItem("projects", JSON.stringify(this.projects));
-      localStorage.setItem("tasks", JSON.stringify(this.tasks));
-      localStorage.setItem("users", JSON.stringify(this.users));
+      localStorage.setItem('user', JSON.stringify(this.user));
+      localStorage.setItem('managers', JSON.stringify(this.managers));
+      localStorage.setItem('projects', JSON.stringify(this.projects));
+      localStorage.setItem('tasks', JSON.stringify(this.tasks));
+      localStorage.setItem('users', JSON.stringify(this.users));
     },
     login(email, password) {
       const user = this.users.find((u) => u.email === email);
@@ -53,7 +53,7 @@ export const useDataStore = defineStore("data", {
     },
     logout() {
       this.user = null;
-      localStorage.removeItem("user");
+      localStorage.removeItem('user');
     },
     register(name, email, password, roles) {
       const existingUser = this.users.find((user) => user.email === email);
@@ -70,7 +70,7 @@ export const useDataStore = defineStore("data", {
       };
 
       this.users.push(newUser);
-      if (newUser.roles.includes("manager")) {
+      if (newUser.roles.includes('manager')) {
         this.managers.push(newUser);
       }
       this.syncToLocalStorage();
@@ -129,6 +129,47 @@ export const useDataStore = defineStore("data", {
     deleteTask(taskId) {
       this.tasks = this.tasks.filter((task) => task.id !== taskId);
       this.syncToLocalStorage();
+    },
+
+    getExportProject(projectId) {
+      const project = this.projects.find((p) => p.id === projectId);
+      if (!project) {
+        return JSON({ erreur: 'Unknow project' });
+      }
+
+      const managerNames = this.users.filter((user) => project.managerIds.includes(user.id)).map((user) => user.name);
+
+      const tasks = this.tasks
+        .filter((task) => task.projectId === project.id)
+        .map(({ title, description, status, comments, assignedTo }) => {
+          const user = this.users.find((u) => u.id === assignedTo);
+          const statusObj = this.status ? this.status.find((s) => s.id === status) : null;
+
+          const commentsFormatted = comments.map(({ date, content, authorId }) => {
+            const author = this.users.find((u) => u.id === authorId);
+            return {
+              date,
+              content,
+              author: author ? author.name : 'Auteur inconnu',
+            };
+          });
+
+          return {
+            title,
+            description,
+            status: statusObj ? statusObj.name : status,
+            comments: commentsFormatted || [],
+            userAssigned: user ? user.name : 'Non assigné',
+          };
+        });
+
+      return {
+        id: project.id,
+        title: project.title,
+        description: project.description,
+        managers: managerNames || 'Unknow',
+        tasks: tasks || 'Unknow',
+      };
     },
   },
 });
