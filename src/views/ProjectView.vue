@@ -1,15 +1,15 @@
 <script setup>
-import { computed, onBeforeMount, ref, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { useDataStore } from "@/stores/dataStore";
-import { statusEnum } from "@/data/statusEnum.js";
-import { statusUtils } from "@/utils/statusUtils.js";
-import Swal from "sweetalert2";
-import ProjectActions from "@/components/projects/ProjectActions.vue";
-import TaskFormModal from "@/components/tasks/TaskFormModal.vue";
-import TaskDetailsModal from "@/components/tasks/TaskDetailsModal.vue";
-import DeveloperTasksView from "@/components/tasks/DeveloperTasksView.vue";
-import ManagerTasksView from "@/components/tasks/ManagerTasksView.vue";
+import { computed, onBeforeMount, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { useDataStore } from '@/stores/dataStore';
+import { statusEnum } from '@/data/statusEnum.js';
+import { statusUtils } from '@/utils/statusUtils.js';
+import Swal from 'sweetalert2';
+import ProjectActions from '@/components/projects/ProjectActions.vue';
+import TaskFormModal from '@/components/tasks/TaskFormModal.vue';
+import TaskDetailsModal from '@/components/tasks/TaskDetailsModal.vue';
+import DeveloperTasksView from '@/components/tasks/DeveloperTasksView.vue';
+import ManagerTasksView from '@/components/tasks/ManagerTasksView.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -20,26 +20,25 @@ const isCreatingTask = ref(false);
 const isPostingComment = ref(false);
 const taskToEdit = ref(null);
 
-
-const hasBothRoles = computed(() => store.user?.roles?.includes("manager") && store.user?.roles?.includes("developer"));
-const hasManagerRole = computed(() => store.user?.roles?.includes("manager") && !store.user?.roles?.includes("developer"));
-const hasDeveloperRole = computed(() => store.user?.roles?.includes("developer") && !store.user?.roles?.includes("manager"));
+const hasBothRoles = computed(() => store.user?.roles?.includes('manager') && store.user?.roles?.includes('developer'));
+const hasManagerRole = computed(() => store.user?.roles?.includes('manager') && !store.user?.roles?.includes('developer'));
+const hasDeveloperRole = computed(() => store.user?.roles?.includes('developer') && !store.user?.roles?.includes('manager'));
 
 const viewMode = ref(null);
 const projectId = route.params.id;
 
 onBeforeMount(() => {
-  if (store.user?.roles?.includes("manager")) {
+  if (store.user?.roles?.includes('manager')) {
     return;
   }
 
-  if (store.user?.roles?.includes("developer")) {
+  if (store.user?.roles?.includes('developer')) {
     const developperHasTasks = store.tasks.some((task) => task.projectId === projectId && task.assignedTo === store.user.id);
     if (!developperHasTasks) {
       router.push({ name: 'home' });
     }
   }
-})
+});
 
 watch(
   [hasBothRoles, hasManagerRole, hasDeveloperRole],
@@ -47,11 +46,11 @@ watch(
     if (viewMode.value === null) {
       if (hasBothRoles.value) {
         const savedMode = localStorage.getItem(`projectViewMode_${route.params.id}`);
-        viewMode.value = savedMode || "manager";
+        viewMode.value = savedMode || 'manager';
       } else if (hasManagerRole.value) {
-        viewMode.value = "manager";
+        viewMode.value = 'manager';
       } else if (hasDeveloperRole.value) {
-        viewMode.value = "developer";
+        viewMode.value = 'developer';
       }
     }
   },
@@ -68,18 +67,18 @@ const handleDelete = async () => {
   try {
     store.deleteProject(projectId);
     await Swal.fire({
-      title: "Success!",
-      text: "Project deleted successfully",
-      icon: "success",
+      title: 'Success!',
+      text: 'Project deleted successfully',
+      icon: 'success',
       timer: 2000,
       showConfirmButton: false,
     });
-    router.push("/");
+    router.push('/');
   } catch (error) {
     Swal.fire({
-      title: "Error!",
-      text: "Failed to delete project",
-      icon: "error",
+      title: 'Error!',
+      text: 'Failed to delete project',
+      icon: 'error',
     });
   } finally {
     isDeleting.value = false;
@@ -122,35 +121,35 @@ const progessPercentage = computed(() => {
 });
 
 const projectStatus = computed(() => {
-  if (!project.value) return { label: "Unknown", class: "bg-secondary", icon: "bi-question-circle" };
-  if (!store.status || !Array.isArray(store.status)) return { label: "Unknown", class: "bg-secondary", icon: "bi-question-circle" };
+  if (!project.value) return { label: 'Unknown', class: 'bg-secondary', icon: 'bi-question-circle' };
+  if (!store.status || !Array.isArray(store.status)) return { label: 'Unknown', class: 'bg-secondary', icon: 'bi-question-circle' };
 
   const st = store.status.find((s) => s?.id === project.value.status);
-  if (!st) return { label: "Unknown", class: "bg-secondary", icon: "bi-question-circle" };
+  if (!st) return { label: 'Unknown', class: 'bg-secondary', icon: 'bi-question-circle' };
 
   let cls;
   let icon;
 
   switch (st.name) {
     case statusEnum.DONE:
-      cls = "bg-success";
-      icon = "bi-check-circle-fill";
+      cls = 'bg-success';
+      icon = 'bi-check-circle-fill';
       break;
     case statusEnum.CANCELLED:
-      cls = "bg-danger";
-      icon = "bi-x-circle-fill";
+      cls = 'bg-danger';
+      icon = 'bi-x-circle-fill';
       break;
     case statusEnum.IN_PROGRESS:
-      cls = "bg-warning text-dark";
-      icon = "bi-arrow-repeat";
+      cls = 'bg-warning text-dark';
+      icon = 'bi-arrow-repeat';
       break;
     case statusEnum.TO_DO:
-      cls = "bg-info text-dark";
-      icon = "bi-clock";
+      cls = 'bg-info text-dark';
+      icon = 'bi-clock';
       break;
     default:
-      cls = "bg-primary";
-      icon = "bi-circle";
+      cls = 'bg-primary';
+      icon = 'bi-circle';
       break;
   }
 
@@ -158,14 +157,14 @@ const projectStatus = computed(() => {
 });
 
 const projectHealth = computed(() => {
-  if (!project.value) return { label: "Unknown", class: "bg-secondary", icon: "bi-question-circle", description: "" };
+  if (!project.value) return { label: 'Unknown', class: 'bg-secondary', icon: 'bi-question-circle', description: '' };
 
   if (progessPercentage.value === 100) {
     return {
-      label: "Completed",
-      class: "bg-success",
-      icon: "bi-check-circle-fill",
-      description: "Project completed",
+      label: 'Completed',
+      class: 'bg-success',
+      icon: 'bi-check-circle-fill',
+      description: 'Project completed',
     };
   }
 
@@ -176,25 +175,25 @@ const projectHealth = computed(() => {
 
   if (diffDays < 0) {
     return {
-      label: "Delayed",
-      class: "bg-danger",
-      icon: "bi-exclamation-triangle-fill",
+      label: 'Delayed',
+      class: 'bg-danger',
+      icon: 'bi-exclamation-triangle-fill',
       description: `${Math.abs(diffDays)} days overdue`,
     };
   }
   if (diffDays <= 3) {
     return {
-      label: "At Risk",
-      class: "bg-warning text-dark",
-      icon: "bi-exclamation-circle-fill",
+      label: 'At Risk',
+      class: 'bg-warning text-dark',
+      icon: 'bi-exclamation-circle-fill',
       description: `${diffDays} days remaining`,
     };
   }
 
   return {
-    label: "On Track",
-    class: "bg-success",
-    icon: "bi-check-circle",
+    label: 'On Track',
+    class: 'bg-success',
+    icon: 'bi-check-circle',
     description: `${diffDays} days remaining`,
   };
 });
@@ -205,9 +204,9 @@ function getDefaultStatus() {
   const statusName = hasManagerRole.value ? statusEnum.VALID : statusEnum.PENDING;
   return store.status.find((s) => s.name === statusName)?.id;
 }
-const newTask = ref({ title: "", description: "", assignedTo: "", status: getDefaultStatus() });
+const newTask = ref({ title: '', description: '', assignedTo: '', status: getDefaultStatus() });
 const selectedTask = ref(null);
-const newCommentText = ref("");
+const newCommentText = ref('');
 
 function openTaskDetails(task) {
   selectedTask.value = task;
@@ -229,7 +228,7 @@ function handleViewModeChange(mode) {
 }
 
 function formatDate(isoString) {
-  return new Date(isoString).toLocaleString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+  return new Date(isoString).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 }
 
 function openCreateModal() {
@@ -262,18 +261,7 @@ function handleTaskSaved() {
           <div class="d-flex align-items-center mb-3">
             <h1 class="display-6 mb-0 me-3">{{ project.title }}</h1>
 
-            <ProjectActions 
-              v-if="project"
-              :project="project"
-              :hasBothRoles="hasBothRoles"
-              :hasManagerRole="hasManagerRole"
-              :isManagerInProject="canManageTasks"
-              :viewMode="viewMode"
-              :isDeleting="isDeleting"
-              @delete="handleDelete"
-              @update-view-mode="handleViewModeChange"
-              class="ms-auto"
-            />
+            <ProjectActions v-if="project" :project="project" :hasBothRoles="hasBothRoles" :hasManagerRole="hasManagerRole" :isManagerInProject="canManageTasks" :viewMode="viewMode" :isDeleting="isDeleting" @delete="handleDelete" @update-view-mode="handleViewModeChange" class="ms-auto" />
           </div>
 
           <p class="text-muted mb-3">{{ project.description }}</p>
@@ -345,29 +333,15 @@ function handleTaskSaved() {
         <div class="col-12">
           <div class="card bg-light border-0">
             <div class="card-body text-start py-4 px-4">
-              <DeveloperTasksView 
-                v-if="viewMode === 'developer'"
-                :tasks="tasks"
-                :projectStatus="projectStatus.label"
-                :userId="store.user?.id"
-                @view-task="openTaskDetails"
-                @add-task="openCreateModal"
-              />
+              <DeveloperTasksView v-if="viewMode === 'developer'" :tasks="tasks" :projectStatus="projectStatus.label" :userId="store.user?.id" @view-task="openTaskDetails" @add-task="openCreateModal" />
 
-              <ManagerTasksView 
-                v-else-if="viewMode === 'manager'"
-                :tasks="tasks"
-                :projectStatus="projectStatus.label"
-                :canManageTasks="canManageTasks"
-                @view-task="openTaskDetails"
-                @add-task="openCreateModal" @edit-task="openEditModal"
-              />
+              <ManagerTasksView v-else-if="viewMode === 'manager'" :tasks="tasks" :projectStatus="projectStatus.label" :canManageTasks="canManageTasks" @view-task="openTaskDetails" @add-task="openCreateModal" @edit-task="openEditModal" />
             </div>
           </div>
         </div>
       </div>
 
-      <TaskFormModal :isOpen="showModal" :projectId="projectId" :hasBothRoles="hasBothRoles" :hasDeveloperRole="hasDeveloperRole" :isCreating="isCreatingTask" :taskToEdit="taskToEdit" @close="showModal = false" @task-created="handleTaskCreated" @task-updated="handleTaskUpdated" />
+      <TaskFormModal :isOpen="showModal" :projectId="projectId" :hasBothRoles="hasBothRoles" :hasManagerRole="hasManagerRole" :hasDeveloperRole="hasDeveloperRole" :isCreating="isCreatingTask" :taskToEdit="taskToEdit" @close="showModal = false" @task-created="handleTaskCreated" @task-updated="handleTaskUpdated" />
 
       <TaskDetailsModal :task="selectedTask" :isOpen="!!selectedTask" :isPostingComment="isPostingComment" @close="selectedTask = null" @comment-added="handleCommentAdded" />
     </div>
