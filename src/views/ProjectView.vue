@@ -292,7 +292,7 @@ function openEditModal(task) {
             <ProjectActions v-if="project" :project="project" :hasBothRoles="hasBothRoles" :hasManagerRole="hasManagerRole" :isManagerInProject="canManageTasks" :viewMode="viewMode" :isDeleting="isDeleting" @delete="handleDelete" @export="handleExport" @update-view-mode="handleViewModeChange" class="ms-auto" />
           </div>
 
-          <p class="text-muted mb-3">{{ project.description }}</p>
+          <p class=" mb-3">{{ project.description }}</p>
 
           <div class="d-flex align-items-center text-secondary small">
             <i class="bi bi-calendar-event me-2"></i>
