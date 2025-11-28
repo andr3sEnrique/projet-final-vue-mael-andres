@@ -104,8 +104,8 @@ const setViewMode = (mode) => {
         </button>
         <button 
           @click="handleExport" 
-          class="btn btn-sm btn-outline-danger"
-          aria-label="Delete project"
+          class="btn btn-sm btn-outline-warning"
+          aria-label="Export project"
           :disabled="isDeleting"
         >
           <span class="d-inline d-sm-none">📤</span>

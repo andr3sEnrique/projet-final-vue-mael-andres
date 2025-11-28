@@ -171,5 +171,51 @@ export const useDataStore = defineStore('data', {
         tasks: tasks || 'Unknow',
       };
     },
+
+    importProject(jsonProject) {
+      const newProjectId = crypto.randomUUID();
+
+      const managerIds = jsonProject.managers.map((name) => this.users.find((u) => u.name === name)?.id).filter((id) => id);
+      const newTasksIds = [];
+
+      if (jsonProject.tasks && Array.isArray(jsonProject.tasks)) {
+        jsonProject.tasks.forEach(({ userAssigned, status, title, description }) => {
+          const newTaskId = crypto.randomUUID();
+
+          const foundUser = this.users.find((u) => u.name === userAssigned);
+          const userId = foundUser ? foundUser.id : '';
+
+          const foundStatus = this.status.find((s) => s.name === status);
+          const statusId = foundStatus ? foundStatus.id : '6';
+
+          const newTask = {
+            id: newTaskId,
+            projectId: newProjectId,
+            title,
+            description,
+            status: statusId,
+            assignedTo: userId,
+            comments: [],
+          };
+
+          this.tasks.push(newTask);
+          newTasksIds.push(newTaskId);
+        });
+      }
+
+      const newProject = {
+        id: newProjectId,
+        title: jsonProject.title + ' (Imported)',
+        description: jsonProject.description,
+        managerIds: managerIds,
+        tasks: newTasksIds,
+        startDate: null,
+        endDate: null,
+        status: '1',
+      };
+      this.projects.push(newProject);
+      this.syncToLocalStorage();
+      return true;
+    },
   },
 });

@@ -1,9 +1,12 @@
 <script setup>
-import { useDataStore } from "@/stores/dataStore";
-import { computed } from "vue";
+import { useDataStore } from '@/stores/dataStore';
+import Swal from 'sweetalert2';
+import { computed, ref } from 'vue';
 const store = useDataStore();
 
-const hasManagerRole = computed(() => store.user?.roles.includes("manager"));
+const fileInput = ref(null);
+
+const hasManagerRole = computed(() => store.user?.roles.includes('manager'));
 const projects = store.projects;
 
 const finalProjects = computed(() => {
@@ -15,6 +18,43 @@ const finalProjects = computed(() => {
     return store.tasks.some((task) => task.projectId === project.id && task.assignedTo === store.user?.id);
   });
 });
+
+const triggerImport = () => {
+  fileInput.value.click();
+};
+
+const handleFileChange = (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const jsonContent = JSON.parse(e.target.result);
+
+      if (!jsonContent.title || !jsonContent.tasks) {
+        throw new Error('Invalid format');
+      }
+      store.importProject(jsonContent);
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Successfully imported',
+        text: 'The project we successfully imported',
+        timer: 200,
+        showConfirmButton: false,
+      });
+    } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Impossible to read json file. Check the format',
+      });
+    } finally {
+      event.target.value = '';
+    }
+  };
+  reader.readAsText(file);
+};
 </script>
 
 <template>
@@ -23,8 +63,15 @@ const finalProjects = computed(() => {
       <h1 class="display-5 fw-bold text-primary">My Projects</h1>
       <p>Select a project to see its tasks.</p>
     </div>
-    <div>
+    <div class="d-flex">
       <router-link v-if="hasManagerRole" :to="{ name: 'add-project' }" class="btn btn-primary mb-3"> Create a new project </router-link>
+      <div>
+        <input type="file" ref="fileInput" @change="handleFileChange" accept=".json" style="display: none" />
+        <button @click="triggerImport" class="btn btn-outline-warning mb-3">
+          <span class="d-inline d-sm-none">📥</span>
+          <span class="d-none d-sm-inline">📥 Import</span>
+        </button>
+      </div>
     </div>
 
     <div v-if="finalProjects.length === 0" class="alert alert-info" role="alert">There are no projects available at this time.</div>
