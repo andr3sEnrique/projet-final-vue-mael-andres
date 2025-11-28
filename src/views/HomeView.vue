@@ -63,7 +63,7 @@ const handleFileChange = (event) => {
       <h1 class="display-5 fw-bold text-primary">My Projects</h1>
       <p>Select a project to see its tasks.</p>
     </div>
-    <div class="d-flex">
+    <div class="d-flex gap-3 mb-3">
       <router-link v-if="hasManagerRole" :to="{ name: 'add-project' }" class="btn btn-primary mb-3"> Create a new project </router-link>
       <div>
         <input type="file" ref="fileInput" @change="handleFileChange" accept=".json" style="display: none" />
