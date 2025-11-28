@@ -21,7 +21,7 @@ const finalProjects = computed(() => {
   <div class="container">
     <div class="d-flex flex-column align-items-center">
       <h1 class="display-5 fw-bold text-primary">My Projects</h1>
-      <p class="text-muted">Select a project to see its tasks.</p>
+      <p>Select a project to see its tasks.</p>
     </div>
     <div>
       <router-link v-if="hasManagerRole" :to="{ name: 'add-project' }" class="btn btn-primary mb-3"> Create a new project </router-link>

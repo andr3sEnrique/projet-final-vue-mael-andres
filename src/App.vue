@@ -31,10 +31,25 @@ const toggleTheme = () => {
   <header>
     <TheNavbar
       v-if="route.name !== 'login' && route.name !== 'register'"
-      :is-dark="isDarkMode"
-      @toggle-theme="toggleTheme"
     />
+    <div  class="container-fluid py-2">
+      <div class="container">
+        <div class="d-flex justify-content-end">
+          <div class="form-check form-switch">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              id="darkModeSwitch"
+              :checked="isDarkMode"
+              @change="toggleTheme"
+            />
+            <label class="form-check-label" for="darkModeSwitch">
+              {{ isDarkMode ? "☀️" : "🌙" }}
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
   </header>
-
   <RouterView />
 </template>

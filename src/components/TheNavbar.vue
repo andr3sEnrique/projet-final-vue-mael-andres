@@ -2,9 +2,6 @@
 import { useDataStore } from "@/stores/dataStore";
 import { useRouter } from "vue-router";
 
-const props = defineProps({
-  isDark: Boolean,
-});
 const store = useDataStore();
 const router = useRouter();
 
@@ -12,18 +9,13 @@ function handleLogout() {
   store.logout();
   router.push("/login");
 }
-
-const emit = defineEmits(["toggle-theme"]);
 </script>
 
 <template>
-  <nav
-    class="navbar navbar-expand-lg"
-    :class="props.isDark ? 'navbar-dark bg-dark' : 'navbar-light bg-light'"
-  >
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container">
       <router-link class="navbar-brand d-flex align-items-center" :to="{ name: 'home' }">
-        <i class="bi bi-kanban me-2"></i> Projects Management
+        <span>Projects Management</span>
       </router-link>
 
       <button
@@ -44,14 +36,6 @@ const emit = defineEmits(["toggle-theme"]);
             <span class="nav-link">
               Hi, <strong>{{ store.user.name }}</strong>
             </span>
-          </li>
-
-          <li class="nav-item me-2">
-            <button class="btn btn-outline-secondary btn-sm mb-1" @click="emit('toggle-theme')">
-              <i v-if="props.isDark" class="bi bi-sun me-1"></i>
-              <i v-else class="bi bi-moon me-1"></i>
-              {{ props.isDark ? 'Light Mode' : 'Dark Mode' }}
-            </button>
           </li>
 
           <li v-if="store.user" class="nav-item">

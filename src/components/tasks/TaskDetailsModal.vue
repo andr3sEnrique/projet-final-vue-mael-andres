@@ -105,27 +105,27 @@ function closeModal() {
         <div class="modal-body">
           <div class="row">
             <div class="col-md-7 border-end">
-              <h6 class="text-muted">Description</h6>
+              <h6>Description</h6>
               <p>{{ task?.description || "No description" }}</p>
 
               <div class="mt-4">
                 <span  class="badge rounded-pill me-2" :class="statusBadgeClass">{{statusName }}</span>
-                <small class="text-muted">ID: {{ task?.id }}</small>
+                <small>ID: {{ task?.id }}</small>
               </div>
             </div>
 
             <div class="col-md-5">
-              <h6 class="text-muted mb-3">Comments</h6>
+              <h6 class="mb-3">Comments</h6>
 
               <div class="comments-list mb-3">
-                <div v-if="!task?.comments || task.comments.length === 0" class="text-center text-muted fst-italic mt-4">No comments yet.</div>
+                <div v-if="!task?.comments || task.comments.length === 0" class="text-centerfst-italic mt-4">No comments yet.</div>
 
                 <div v-else v-for="comment in task.comments" :key="comment?.id" class="comment-item mb-3">
                   <div class="d-flex justify-content-between">
                     <strong class="text-primary small">{{ getAuthorName(comment?.authorId) }}</strong>
-                    <span class="text-muted x-small" style="font-size: 0.75rem">{{ formatDate(comment?.date) }}</span>
+                    <span class=" x-small" style="font-size: 0.75rem">{{ formatDate(comment?.date) }}</span>
                   </div>
-                  <div class="bg-light p-2 rounded mt-1 text-dark">
+                  <div class="comment-content bg-light p-2 rounded mt-1 text-dark">
                     {{ comment?.content }}
                   </div>
                 </div>

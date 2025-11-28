@@ -117,7 +117,7 @@ const handleAddTask = () => {
     </div>
 
     <div v-if="searchQuery || selectedStatusId" class="mt-2">
-      <small class="text-muted">
+      <small>
         <i class="bi bi-info-circle me-1"></i>
         Showing {{ filteredTasks.length }} of {{ tasks.length }} tasks
       </small>
@@ -131,12 +131,6 @@ const handleAddTask = () => {
   padding: 1.5rem;
   border-radius: 0.5rem;
   border: 1px solid #dee2e6;
-}
-
-.form-label {
-  font-weight: 500;
-  color: #495057;
-  margin-bottom: 0.5rem;
 }
 
 .form-control,

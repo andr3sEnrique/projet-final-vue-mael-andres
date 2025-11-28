@@ -24,7 +24,7 @@ const handleLogin = () => {
 </script>
 
 <template>
-  <div class="d-flex justify-content-center align-items-center min-vh-100 bg-light">
+  <div class="d-flex justify-content-center align-items-center min-vh-100">
     <div class="card shadow p-4 border-0" style="max-width: 400px; width: 100%">
       <div class="card-body">
         <h2 class="text-center mb-4 text-primary">Login</h2>

@@ -176,14 +176,14 @@ onUnmounted(() => {
   <div class="card mb-3 task-card border-0 shadow-sm" :class="{ 'dropdown-active': showStatusDropdown }">
     <div class="card-body">
       <div class="d-flex justify-content-between align-items-start mb-2">
-        <h5 class="card-title mb-0 fw-bold text-dark fs-6 fs-sm-5">{{ task.title }}</h5>
+        <h5 class="card-title mb-0 fw-bold fs-6 fs-sm-5">{{ task.title }}</h5>
 
         <div class="position-relative">
           <span class="badge rounded-pill" :class="[statusBadgeClass, canClickStatus ? 'cursor-pointer' : '']" @click="handleStatusClick" :style="{ cursor: canClickStatus ? 'pointer' : 'default' }" :title="canClickStatus ? 'Click to change the status' : (props.projectStatus === statusEnum.CANCELLED ? 'Cannot change status - project is cancelled' : 'You cannot change the status from here')"> {{ statusName }} {{ canClickStatus ? "▼" : "" }} </span>
 
           <div v-if="showStatusDropdown && availableStatusObjects.length > 0" class="status-dropdown" @click.stop>
             <div class="dropdown-header">
-              <small class="text-muted">Change Status :</small>
+              <small>Change Status :</small>
             </div>
             <div class="dropdown-body">
               <button v-for="statusObj in availableStatusObjects" :key="statusObj.id" class="dropdown-item" @click="handleStatusChange(statusObj.id)">
@@ -206,7 +206,7 @@ onUnmounted(() => {
           <div class="avatar-circle me-2">
             {{ assignedUser ? assignedUser.name[0] : "?" }}
           </div>
-          <small class="text-muted fs-7 fs-sm-6">
+          <small class=" fs-7 fs-sm-6">
             {{ assignedUser ? assignedUser.name : "Non assigné" }}
           </small>
         </div>

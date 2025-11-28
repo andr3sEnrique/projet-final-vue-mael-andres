@@ -59,8 +59,8 @@ const displayTasks = () => {
 
     <div v-else class="text-center py-5">
       <i class="bi bi-inbox text-secondary" style="font-size: 4rem;"></i>
-      <h5 class="text-secondary mt-3">No tasks yet</h5>
-      <p class="text-muted mb-4">Get started by creating your first task for this project</p>
+      <h5 class="mt-3">No tasks yet</h5>
+      <p class="mb-4">Get started by creating your first task for this project</p>
       <button v-if="canManageTasks" class="btn btn-primary" @click="emit('add-task')" aria-label="Create first task">
         <i class="bi bi-plus-lg me-1"></i> Create First Task
       </button>

@@ -155,7 +155,7 @@ function closeModal() {
         <form @submit.prevent="saveTask">
           <div class="modal-body">
             <div class="mb-3">
-              <label class="form-label fw-semibold" for="taskTitle">Title *</label>
+              <label class="form-label fw-semibold" for="taskTitle">Title <span class="text-danger">*</span></label>
               <input id="taskTitle" v-model="newTask.title" type="text" class="form-control" required placeholder="e.g., Create database schema" :disabled="isCreating" />
             </div>
 
