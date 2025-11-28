@@ -24,7 +24,7 @@ export const useDataStore = defineStore("data", {
       localStorage.setItem("users", JSON.stringify(this.users));
     },
     login(email, password) {
-      const user = seedData.users.find((u) => u.email === email && u.password === password);
+      const user = this.users.find((u) => u.email === email && u.password === password);
       if (user) {
         this.user = user;
         localStorage.setItem("user", JSON.stringify(user));
@@ -54,7 +54,7 @@ export const useDataStore = defineStore("data", {
       localStorage.removeItem("user");
     },
     register(name, email, password, roles) {
-      const existingUser = seedData.users.find((user) => user.email === email);
+      const existingUser = this.users.find((user) => user.email === email);
       if (existingUser) {
         return false;
       }
@@ -67,7 +67,7 @@ export const useDataStore = defineStore("data", {
         roles,
       };
 
-      seedData.users.push(newUser);
+      this.users.push(newUser);
       this.users.push(newUser);
       this.user = newUser;
       if (newUser.roles.includes("manager")) {

@@ -67,7 +67,7 @@ const canClickStatus = computed(() => {
 });
 
 function handleStatusClick() {
-  if (isProjectCancelled.value) {
+  if (isInvalidProjectStatus(props.projectStatus)) {
     return;
   }
   
